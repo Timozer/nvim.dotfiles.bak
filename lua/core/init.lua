@@ -90,31 +90,31 @@ local dashboard_config = function()
 
     vim.g.dashboard_custom_section = {
         change_colorscheme = {
-            description = {' Scheme change              comma s c '},
+            description = {'[0] Scheme change'},
             command = 'DashboardChangeColorscheme'
         },
+        file_new = {
+            description = {'[1] New File'},
+            command = 'DashboardNewFile'
+        },
         find_frecency = {
-            description = {' File frecency              comma f r '},
+            description = {'[2] File Frecency'},
             command = 'Telescope frecency'
         },
         find_history = {
-            description = {' File history               comma f e '},
+            description = {'[3] File History '},
             command = 'DashboardFindHistory'
         },
         find_project = {
-            description = {' Project find               comma f p '},
+            description = {'[4] Find Project '},
             command = 'Telescope project'
         },
         find_file = {
-            description = {' File find                  comma f f '},
+            description = {'[5] Search File  '},
             command = 'DashboardFindFile'
         },
-        file_new = {
-            description = {' File new                   comma f n '},
-            command = 'DashboardNewFile'
-        },
         find_word = {
-            description = {' Word find                  comma f w '},
+            description = {'[6] Grep Word    '},
             command = 'DashboardFindWord'
         }
     }
@@ -123,20 +123,20 @@ end
 local load_core = function()
     local pack = require('core.pack')
     createdir()
-    -- disable_distribution_plugins()
-    -- leader_map()
+    disable_distribution_plugins()
+    leader_map()
 
     pack.ensure_plugins()
     -- neovide_config()
     dashboard_config()
 
     require('core.options')
-    -- require('core.mapping')
-    -- require('keymap')
-    -- require('core.event')
+    require('core.mapping')
+    require('keymap')
+    require('core.event')
     pack.load_compile()
 
-    -- vim.cmd [[colorscheme edge]]
+    vim.cmd [[colorscheme edge]]
 end
 
 load_core()
