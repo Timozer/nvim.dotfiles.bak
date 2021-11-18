@@ -7,8 +7,12 @@ function plugins:init()
 	end
 end
 
-function plugins:start(plgs)
-	require('packer').startup(plgs)
+function plugins:load_plugins(plgs)
+    require('packer').startup(function(use)
+        for key, val in pairs(plgs) do
+            use(val)
+        end
+    end)
 	if plugins.bootstrap then
 		require('packer').sync()
 	end
