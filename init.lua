@@ -14,6 +14,7 @@ local basic_opts = {
 	softtabstop = 4,
 	expandtab = true,
     number = true,
+    completeopt="menu,menuone,noselect",
 }
 
 utils:bind_options(basic_opts)

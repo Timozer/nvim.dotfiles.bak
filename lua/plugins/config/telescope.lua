@@ -11,7 +11,7 @@ require('telescope').setup{
 
 				["<CR>"] = actions.select_default,
 				["<C-s>"] = actions.select_horizontal,
-				["<C-v>"] = actions.select_vertical,
+				["<C-]>"] = actions.select_vertical,
 
 				["<PageUp>"] = actions.preview_scrolling_up,
 				["<PageDown>"] = actions.preview_scrolling_down,
@@ -27,7 +27,7 @@ require('telescope').setup{
 				["<esc>"] = actions.close,
 				["<CR>"] = actions.select_default,
 				["<C-s>"] = actions.select_horizontal,
-				["<C-v>"] = actions.select_vertical,
+				["<C-]>"] = actions.select_vertical,
 
 				["<Tab>"] = actions.toggle_selection + actions.move_selection_worse,
 				["<S-Tab>"] = actions.toggle_selection + actions.move_selection_better,

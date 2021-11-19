@@ -19,6 +19,15 @@ local plugins = {
         'kyazdani42/nvim-tree.lua',
         requires = 'kyazdani42/nvim-web-devicons',
         config = function() require'nvim-tree'.setup {} end
+    },
+    vim_easy_align = {
+        'junegunn/vim-easy-align',
+    },
+    nvim_comment = {
+        'terrortylor/nvim-comment'
+    },
+    nvim_cmp = {
+        'hrsh7th/nvim-cmp'
     }
 }
 
