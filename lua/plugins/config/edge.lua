@@ -1,7 +1,6 @@
 local config = {}
 
 function config.init()
-    print('init edge')
     vim.cmd [[set background=dark]]
     vim.g.edge_style = "aura"
     vim.g.edge_enable_italic = 1

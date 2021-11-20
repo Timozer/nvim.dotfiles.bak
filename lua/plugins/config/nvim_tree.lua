@@ -1,7 +1,6 @@
 local config = {}
 
 function config.init()
-    print('init nvim tree')
     vim.g.nvim_tree_gitignore = 1
     vim.g.nvim_tree_indent_markers = 1
     vim.g.nvim_tree_git_hl = 1

@@ -6,7 +6,6 @@ local has_words_before = function()
 end
 
 function config.init()
-    print('init nvim cmp')
     local cmp = require'cmp'
 
     cmp.setup({

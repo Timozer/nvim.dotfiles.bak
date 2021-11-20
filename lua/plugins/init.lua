@@ -33,7 +33,7 @@ local plugins = {
     },
     nvim_lspconfig = {
         "neovim/nvim-lspconfig",
-        config = function() print('inti lsp') end
+        config = function()  end
     },
     nvim_lsp_installer = {
         'williamboman/nvim-lsp-installer',

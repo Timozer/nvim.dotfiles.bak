@@ -1,7 +1,6 @@
 local config = {}
 
 function config.init()
-    print('init telescope')
     local actions = require('telescope.actions')
 
     require('telescope').setup{
