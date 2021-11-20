@@ -3,12 +3,17 @@
 local utils = require('core.utils')
 
 local basic_opts = {
+    background = "dark",
     termguicolors = true,
 	cul = true,
 	cuc = true,
 	ruler = true,
 	textwidth = 80,
 	colorcolumn = "+1",
+    smartindent=true,
+    smarttab=true,
+    nojoinspaces=true,
+    wrap=true,
 	tabstop = 4,
 	shiftwidth = 4,
 	softtabstop = 4,
@@ -16,6 +21,20 @@ local basic_opts = {
     number = true,
     completeopt="menu,menuone,noselect",
     sessionoptions="blank,buffers,curdir,folds,help,options,tabpages,winsize,resize,winpos,terminal",
+    encoding="utf-8",
+    termencoding="utf-8",
+    fileencodings="utf-8,ucs-bom,gbk,cp936,gb2312,gb18030",
+    scriptencoding="utf-8",
+    autoread=true,
+    novisualbell=true,
+    cmdheight=2,
+    laststatus=2,
+    confirm=true,
+    list=true,
+    listchars="tab:›\ ,eol:↵,trail:•,extends:#,nbsp:.",
+    splitright=true,
+    noswapfile=true,
+    backup=true,
 }
 
 utils:bind_options(basic_opts)
