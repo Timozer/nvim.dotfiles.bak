@@ -35,6 +35,105 @@ local basic_maps = {
 			expr = false,
 		}
 	},
+	{
+		mode = "n",
+		key = "j",
+		cmd = "gj",
+		options = {
+			silent = false,
+			noremap = false,
+			nowait = false,
+			expr = false,
+		}
+	},
+	{
+		mode = "n",
+		key = "k",
+		cmd = "gk",
+		options = {
+			silent = false,
+			noremap = false,
+			nowait = false,
+			expr = false,
+		}
+	},
+	{
+		mode = "n",
+		key = "<leader>q",
+		cmd = ":q<CR>",
+		options = {
+			silent = false,
+			noremap = false,
+			nowait = false,
+			expr = false,
+		}
+	},
+	{
+		mode = "n",
+		key = "<leader>w",
+		cmd = ":w!<CR>",
+		options = {
+			silent = false,
+			noremap = false,
+			nowait = false,
+			expr = false,
+		}
+	},
+	{
+		mode = "n",
+		key = "Q",
+		cmd = ":qa<CR>",
+		options = {
+			silent = false,
+			noremap = false,
+			nowait = false,
+			expr = false,
+		}
+	},
+	{
+		mode = "n",
+		key = "<leader>lw",
+		cmd = "<C-W>l",
+		options = {
+			silent = false,
+			noremap = true,
+			nowait = false,
+			expr = false,
+		}
+	},
+	{
+		mode = "n",
+		key = "<leader>hw",
+		cmd = "<C-W>h",
+		options = {
+			silent = false,
+			noremap = true,
+			nowait = false,
+			expr = false,
+		}
+	},
+	{
+		mode = "n",
+		key = "<leader>jw",
+		cmd = "<C-W>j",
+		options = {
+			silent = false,
+			noremap = true,
+			nowait = false,
+			expr = false,
+		}
+	},
+	{
+		mode = "n",
+		key = "<leader>kw",
+		cmd = "<C-W>k",
+		options = {
+			silent = false,
+			noremap = true,
+			nowait = false,
+			expr = false,
+		}
+	},
 }
 
 utils:bind_keymaps(basic_maps)
