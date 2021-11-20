@@ -15,7 +15,8 @@ function config.init()
             close = "q", -- close the list
             cancel = "<esc>", -- cancel the preview and get back to your last window / buffer / cursor
             refresh = "r", -- manually refresh
-            jump = {"<cr>", "<tab>"}, -- jump to the diagnostic or open / close folds
+            -- jump = {"<cr>", "<tab>"}, -- jump to the diagnostic or open / close folds
+            jump = {"<cr>"},
             open_split = {"<c-s>"}, -- open buffer in new split
             open_vsplit = {"<c-]>"}, -- open buffer in new vsplit
             open_tab = {}, -- open buffer in new tab
@@ -24,9 +25,9 @@ function config.init()
             toggle_preview = {}, -- toggle auto_preview
             hover = "K", -- opens a small popup with the full multiline message
             preview = "p", -- preview the diagnostic location
-            close_folds = {"zM", "zm"}, -- close all folds
-            open_folds = {"zR", "zr"}, -- open all folds
-            toggle_fold = {"zA", "za"}, -- toggle fold of current file
+            close_folds = {"zc"}, -- close all folds
+            open_folds = {"zo"}, -- open all folds
+            toggle_fold = {"za"}, -- toggle fold of current file
             previous = "k", -- preview item
             next = "j" -- next item
         },
