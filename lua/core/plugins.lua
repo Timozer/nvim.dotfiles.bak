@@ -8,11 +8,15 @@ function plugins:init()
 end
 
 function plugins:load_plugins(plgs)
-    require('packer').startup(function(use)
+    require('packer').startup({function(use)
         for key, val in pairs(plgs) do
             use(val)
         end
-    end)
+    end,
+    config = {
+        log = { level = "debug" }
+    }
+    })
 	if plugins.bootstrap then
 		require('packer').sync()
 	end
