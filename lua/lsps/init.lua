@@ -7,17 +7,17 @@ local lsps = {
     },
     clangd = {
         language = 'C++',
-        enable = false,
+        enable = true,
         opts = {},
     },
     cmake = {
         language = 'cmake',
-        enable = false,
+        enable = true,
         opts = {},
     },
     diagnosticls = {
         language = 'Diagnostic',
-        enable = false,
+        enable = true,
         opts = {},
     },
     dockerls = {
@@ -27,17 +27,17 @@ local lsps = {
     },
     gopls = {
         language = 'Golang',
-        enable = false,
+        enable = true,
         opts = {},
     },
     groovyls = {
         language = 'Groovy',
-        enable = false,
+        enable = true,
         opts = {},
     },
     html = {
         language = 'Html',
-        enable = false,
+        enable = true,
         opts = {},
     },
     jsonls = {
@@ -47,12 +47,12 @@ local lsps = {
     },
     jdtls = {
         language = 'Java',
-        enable = false,
+        enable = true,
         opts = {},
     },
     sumneko_lua = {
         language = 'Lua',
-        enable = false,
+        enable = true,
         opts = {},
     },
     pyright = {
@@ -62,12 +62,12 @@ local lsps = {
     },
     lemminx = {
         language = 'XML',
-        enable = false,
+        enable = true,
         opts = {},
     },
     yamlls = {
         language = 'YAML',
-        enable = false,
+        enable = true,
         opts = {},
     }
 }
