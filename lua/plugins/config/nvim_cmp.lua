@@ -21,9 +21,6 @@ function config.init()
                     cmp.select_next_item()
                 elseif require('luasnip').expand_or_jumpable() then
                     require('luasnip').expand_or_jump()
-                -- elseif has_words_before() then
-                --     print('has words before')
-                --     cmp.complete()
                 else
                     fallback()
                 end
@@ -39,7 +36,6 @@ function config.init()
             end, { "i", "s" }),
             ['<PageUp>']   = cmp.mapping(cmp.mapping.scroll_docs(-10), { 'i', 'c' }),
             ['<PageDown>'] = cmp.mapping(cmp.mapping.scroll_docs(10), { 'i', 'c' }),
-            -- ['<CR>']       = cmp.mapping.confirm({ select = true }),
             ['<CR>']       = cmp.mapping(function(fallback) 
                 if cmp.visible() then
                     cmp.confirm({select = true})
