@@ -1,7 +1,7 @@
 local plugins = {}
 
 function plugins:init()
-	self.install_path = vim.fn.stdpath('config')..'/plugins/packer/start/packer.nvim'
+	self.install_path = vim.fn.stdpath('data')..'/site/pack/packer/start/packer.nvim'
 	if vim.fn.empty(vim.fn.glob(self.install_path)) > 0 then
 		self.bootstrap = vim.fn.system({'git', 'clone', '--depth', '1', 'https://e.coding.net/zhenyuwang1/import-kty7/packer.nvim', self.install_path})
 	end
@@ -16,8 +16,8 @@ function plugins:load_plugins(plgs)
     end,
     config = {
             ensure_dependencies   = true, -- Should packer install plugin dependencies?
-            package_root   = util.join_paths(vim.fn.stdpath('config'), 'plugins'),
-            compile_path = util.join_paths(vim.fn.stdpath('config'), 'packer_compiled.lua'),
+            package_root   = util.join_paths(vim.fn.stdpath('data'), 'site', 'pack'),
+            compile_path = util.join_paths(vim.fn.stdpath('config'), 'plugin', 'packer_compiled.lua'),
             plugin_package = 'packer', -- The default package for plugins
             max_jobs = nil, -- Limit the number of simultaneous jobs. nil means no limit
             auto_clean = true, -- During sync(), remove unused plugins

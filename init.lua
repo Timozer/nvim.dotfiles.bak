@@ -31,12 +31,13 @@ local basic_opts = {
     list=true,
     listchars="tab:› ,eol:↵,trail:•,extends:#,nbsp:.",
     splitright=true,
-    backup=true,
+    backup=false,
 }
 
 utils:bind_options(basic_opts)
 
 vim.g.mapleader = ","
+vim.g.maplocalleader = ","
 vim.g.did_load_filetypes = 1
 
 local basic_maps = {

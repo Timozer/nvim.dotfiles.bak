@@ -136,10 +136,10 @@ local plugins = {
         after = 'lualine-lsp-progress',
         config = require('plugins.config.lualine').init
     },
-    auto_session = {
-        'auto-session',
-        config = require('plugins.config.auto_session').init
-    },
+    -- auto_session = {
+    --     'auto-session',
+    --     config = require('plugins.config.auto_session').init
+    -- },
     indent_blankline = {
         'indent-blankline.nvim',
         config = require('plugins.config.indent_blankline').init
