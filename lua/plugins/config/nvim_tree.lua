@@ -1,6 +1,10 @@
 local config = {}
 
 function config.init()
+    if packer_plugins["nvim-tree"] and packer_plugins["nvim-tree"].loaded then
+        vim.cmd [[ packadd nvim-tree ]]
+    end
+
     vim.g.nvim_tree_gitignore = 1
     vim.g.nvim_tree_indent_markers = 1
     vim.g.nvim_tree_git_hl = 1

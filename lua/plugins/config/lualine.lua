@@ -1,7 +1,7 @@
 local config = {}
 
 function config.init()
-    local gps = require("nvim-gps")
+    -- local gps = require("nvim-gps")
 
     require('lualine').setup {
         options = {
@@ -13,10 +13,10 @@ function config.init()
         },
 
         sections = {
-            lualine_a = {'mode'},
+            lualine_a = {'filename'},
             lualine_b = {{'branch'}, {'diff'}},
             lualine_c = {
-                {gps.get_location, condition = gps.is_available}, {'lsp_progress'}
+                -- {gps.get_location, condition = gps.is_available},
             },
             lualine_x = {
                 {

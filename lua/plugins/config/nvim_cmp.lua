@@ -6,13 +6,36 @@ local has_words_before = function()
 end
 
 function config.init()
+    if not packer_plugins["nvim-cmp"].loaded then
+        vim.cmd [[packadd nvim-cmp]]
+    end
+    if not packer_plugins["LuaSnip"].loaded then
+        vim.cmd [[packadd LuaSnip]]
+    end
+    if not packer_plugins["cmp_luasnip"].loaded then
+        vim.cmd [[packadd cmp_luasnip]]
+    end
+    if not packer_plugins["cmp-buffer"].loaded then
+        vim.cmd [[packadd cmp-buffer]]
+    end
+    if not packer_plugins["cmp-nvim-lsp"].loaded then
+        vim.cmd [[packadd cmp-nvim-lsp]]
+    end
+    if not packer_plugins["cmp-path"].loaded then
+        vim.cmd [[packadd cmp-path]]
+    end
+    if not packer_plugins["cmp-cmdline"].loaded then
+        vim.cmd [[packadd cmp-cmdline]]
+    end
+    if not packer_plugins["lspkind-nvim"].loaded then
+        vim.cmd [[packadd lspkind-nvim]]
+    end
+
     local cmp = require'cmp'
 
     cmp.setup({
         snippet = {
-            expand = function(args)
-                require('luasnip').lsp_expand(args.body) -- For `luasnip` users.
-            end,
+            expand = function(args) require('luasnip').lsp_expand(args.body) end,
         },
         mapping = {
             ['<Tab>'] = cmp.mapping(function(fallback)
@@ -86,10 +109,6 @@ function config.init()
             { name = 'cmdline' }
         })
     })
-
-    -- The nvim-cmp almost supports LSP's capabilities so You should advertise it to LSP servers..
-    local capabilities = vim.lsp.protocol.make_client_capabilities()
-    capabilities = require('cmp_nvim_lsp').update_capabilities(capabilities)
 end
 
 return config

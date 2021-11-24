@@ -56,7 +56,6 @@ function config.init()
             max_file_lines = 1000 -- Do not enable for files with more than 1000 lines, int
         },
         context_commentstring = {enable = true, enable_autocmd = false},
-        matchup = {enable = true},
         context = {enable = true, throttle = true}
     }
 end
