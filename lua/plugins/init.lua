@@ -87,10 +87,6 @@ local plugins = {
         --after = 'nvim-lspconfig',
         --config = require('plugins.config.lspsaga').init
     --},
-    --trouble = {
-        --'trouble.nvim',
-        --config = require('plugins.config.trouble').init
-    --},
     luasnip = {
         'LuaSnip',
         opt = true,
@@ -112,8 +108,8 @@ local plugins = {
     },
     nvim_cmp = {
         'nvim-cmp',
-        opt = true,
-        event = { 'InsertEnter' },
+        -- opt = true,
+        -- event = { 'InsertEnter' },
         requires = {
             {'cmp_luasnip', after = 'LuaSnip'},
             {'cmp-buffer', after = 'cmp_luasnip'},
@@ -130,40 +126,33 @@ local plugins = {
         after = 'nvim-cmp',
         config = require('plugins.config.nvim_autopairs').init
     },
-    -- treesitter = {
-        -- 'nvim-treesitter',
-        -- run = ':TSUpdate',
-        -- config = require('plugins.config.treesitter').init
-    -- },
-    -- treesitter_textobjects = {
-        -- 'nvim-treesitter-textobjects',
-        -- after = 'nvim-treesitter',
-    -- },
-    -- treesitter_context = {
-        -- 'nvim-treesitter-context',
-        -- after = 'nvim-treesitter',
-    -- },
-    -- ts_rainbow = {
-        -- 'nvim-ts-rainbow',
-        -- after = 'nvim-treesitter',
-    -- },
-    -- ts_context_commentstring = {
-        -- 'nvim-ts-context-commentstring',
-        -- after = 'nvim-treesitter',
-    -- },
-    -- nvim_comment = {
-      --   'nvim-comment',
-        -- config = require('plugins.config.nvim_comment').init
-    -- },
-    -- nvim_gps = {
-        -- 'nvim-gps',
-        -- after = 'nvim-treesitter',
-        -- config = require('plugins.config.nvim_gps').init
-    -- },
-    -- auto_session = {
-    --     'auto-session',
-    --     config = require('plugins.config.auto_session').init
-    -- },
+    treesitter = {
+        'nvim-treesitter',
+        run = ':TSUpdate',
+        opt = true,
+        event = 'BufRead',
+        requires = {
+            {'nvim-treesitter-textobjects', opt = true},
+            {'nvim-treesitter-context', opt = true},
+            {'nvim-ts-rainbow', opt = true},
+            {'nvim-ts-context-commentstring', opt = true},
+            {'nvim-gps', opt = true, config = require('plugins.config.nvim_gps').init },
+        },
+        config = require('plugins.config.treesitter').init
+    },
+    nvim_comment = {
+        'nvim-comment',
+        opt = true,
+        cmd = {'CommentToggle'},
+        requires = {
+            {'nvim-ts-context-commentstring', opt = true},
+        },
+        config = require('plugins.config.nvim_comment').init
+    },
+    auto_session = {
+        'auto-session',
+        config = require('plugins.config.auto_session').init
+    },
 }
 
 return plugins

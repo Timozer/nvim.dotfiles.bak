@@ -45,7 +45,8 @@ function config.init()
                 elseif require('luasnip').expand_or_jumpable() then
                     require('luasnip').expand_or_jump()
                 else
-                    fallback()
+                    vim.api.nvim_eval([[feedkeys("\<tab>", "n")]])
+                    -- fallback()
                 end
             end, { "i", "s" }),
             ["<S-Tab>"] = cmp.mapping(function(fallback)

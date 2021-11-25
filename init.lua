@@ -1,6 +1,3 @@
--- if not vim.g.vscode then require("core") end
-
-
 local utils = require('core.utils')
 
 local basic_opts = {
@@ -21,17 +18,18 @@ local basic_opts = {
 	expandtab = true,
     number = true,
     completeopt="menu,menuone,noselect",
-    sessionoptions="blank,buffers,curdir,folds,help,options,tabpages,winsize,resize,winpos,terminal",
+    sessionoptions="buffers,curdir,folds,options,localoptions,winsize,resize,winpos",
     encoding="utf-8",
     fileencodings="utf-8,ucs-bom,gbk,cp936,gb2312,gb18030",
     autoread=true,
-    cmdheight=5,
+    cmdheight=2,
     laststatus=2,
     confirm=true,
     list=true,
     listchars="tab:› ,eol:↵,trail:•,extends:#,nbsp:.",
     splitright=true,
     backup=false,
+    swapfile=false,
 }
 
 utils:bind_options(basic_opts)
