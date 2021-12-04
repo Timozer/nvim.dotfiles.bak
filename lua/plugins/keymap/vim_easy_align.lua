@@ -2,7 +2,7 @@ local maps = {
 	{
 		mode = "v",
 		key = "<Enter>",
-		cmd = "<Plug>(EasyAlign)",
+		cmd = ":EasyAlign<cr>",
 		options = {
 			noremap = false,
 		}

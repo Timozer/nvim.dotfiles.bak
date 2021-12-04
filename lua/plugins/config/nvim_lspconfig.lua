@@ -81,12 +81,12 @@ function config.init()
         vim.cmd [[packadd nvim-lspconfig]]
     end
 
-    if not packer_plugins["nvim-lsp-installer"].loaded then
-        vim.cmd [[packadd nvim-lsp-installer]]
-    end
+--     if not packer_plugins["nvim-lsp-installer"].loaded then
+--         vim.cmd [[packadd nvim-lsp-installer]]
+--     end
 
-    lsp_installer_init()
-    lsp_servers_init()
+--     lsp_installer_init()
+--     lsp_servers_init()
 end
 
 return config

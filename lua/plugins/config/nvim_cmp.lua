@@ -55,7 +55,7 @@ function config.init()
                 elseif require('luasnip').jumpable(-1) then
                     require('luasnip').jump(-1)
                 else
-                    fallback()
+                    vim.api.nvim_eval([[feedkeys("\<s-tab>", "n")]])
                 end
             end, { "i", "s" }),
             ['<PageUp>']   = cmp.mapping(cmp.mapping.scroll_docs(-10), { 'i', 'c' }),
@@ -64,7 +64,7 @@ function config.init()
                 if cmp.visible() then
                     cmp.confirm({select = true})
                 else
-                    fallback()
+                    vim.api.nvim_eval([[feedkeys("\<cr>", "n")]])
                 end
             end),
             -- Specify `cmp.config.disable` if you want to remove the default `<C-y>` mapping.
