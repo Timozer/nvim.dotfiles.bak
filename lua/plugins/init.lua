@@ -73,7 +73,6 @@ local plugins = {
         "nvim-lspconfig",
         opt = true,
         event = 'BufReadPre',
-        -- requires = { 'nvim-lsp-installer', opt = true },
         config = require('plugins.config.nvim_lspconfig').init
     },
     nvim_lightbulb = {

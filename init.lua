@@ -160,13 +160,8 @@ local all_plgs = require('plugins')
 plugins:load_plugins(all_plgs)
 
 for plugin, _ in pairs(all_plgs) do
-    -- cfgfile = vim.fn.stdpath('config')..'/lua/plugins/config/'..plugin..'.lua'
-    -- if (utils:file_exists(cfgfile)) then
-    --     require('plugins.config.'..plugin)
-    -- end
     keymapfile = vim.fn.stdpath('config')..'/lua/plugins/keymap/'..plugin..'.lua'
     if (utils:file_exists(keymapfile)) then
         utils:bind_keymaps(require('plugins.keymap.'..plugin))
     end
 end
-

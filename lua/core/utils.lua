@@ -31,4 +31,15 @@ function utils:dump(o)
    end
 end
 
+function utils:file_read(path)
+    local file = io.open(path,"r")
+    local data = file:read("*a");
+    file:close()
+    return data
+end
+
+function utils:startswith(text, prefix)
+    return text:find(prefix, 1, true) == 1
+end
+
 return utils

@@ -1,0 +1,131 @@
+{
+    "lsp": {
+        "root": "~/.config/nvim/.data/lsps",
+        "servers": {
+            "bashls": {
+                "language": "bash",
+                "enable" : true,
+                "comment" : "",
+                "opts" : {},
+                "install": [
+                    {
+                        "cmd": "sudo npm i -g bash-language-server",
+                        "workspace": ""
+                    }
+                ]
+            },
+            "clangd" : {
+                "language" : "C++",
+                "enable" : true,
+                "opts" : {
+                    "cmd": [
+                        "#clangd_13.0.0/bin/clangd",
+                        "--background-index"
+                    ]
+                },
+                "install": [
+                    {
+                        "cmd": "wget https://github.com/clangd/clangd/releases/download/13.0.0/clangd-linux-13.0.0.zip",
+                        "workspace": ""
+                    },
+                    {
+                        "cmd": "unzip clangd-linux-13.0.0.zip",
+                        "workspace": ""
+                    }
+                ]
+            },
+            "cmake" : {
+                "language" : "cmake",
+                "enable" : true,
+                "opts" : {},
+                "install": [
+                    {
+                        "cmd": "sudo pip install cmake-language-server",
+                        "workspace": ""
+                    }
+                ]
+            },
+            "dockerls" : {
+                "language" : "Docker",
+                "enable" : true,
+                "opts" : {},
+                "install": [
+                    {
+                        "cmd": "sudo npm install -g dockerfile-language-server-nodejs",
+                        "workspace": ""
+                    }
+                ]
+            },
+            "gopls" : {
+                "language" : "Golang",
+                "enable" : true,
+                "opts" : {},
+                "install": [
+                    {
+                        "cmd": "go install golang.org/x/tools/gopls@latest",
+                        "workspace": ""
+                    }
+                ]
+            },
+            "jsonls" : {
+                "language" : "Json",
+                "enable" : true,
+                "opts" : {
+                    "cmd": [
+                        "vscode-json-languageserver",
+                        "--stdio"
+                    ]
+                },
+                "install": [
+                    {
+                        "cmd": "sudo npm i -g vscode-json-languageserver",
+                        "workspace": ""
+                    }
+                ]
+            },
+            "jdtls" : {
+                "language" : "Java",
+                "enable" : true,
+                "opts" : {}
+            },
+            "sumneko_lua" : {
+                "language" : "Lua",
+                "enable" : true,
+                "opts" : {
+                    "cmd" : [ 
+                        "#lua-language-server/bin/Linux/lua-language-server" 
+                    ]
+                },
+                "install": [
+                    {
+                        "cmd": "git clone https://github.com/sumneko/lua-language-server",
+                        "workspace": ""
+                    },
+                    {
+                        "cmd": "git submodule update --init --recursive",
+                        "workspace": "lua-language-server"
+                    },
+                    {
+                        "cmd": "./compile/install.sh",
+                        "workspace": "lua-language-server/3rd/luamake"
+                    },
+                    {
+                        "cmd": "./3rd/luamake/luamake rebuild",
+                        "workspace": "lua-language-server"
+                    }
+                ]
+            },
+            "pyright" : {
+                "language" : "Python",
+                "enable" : true,
+                "opts" : {},
+                "install": [
+                    {
+                        "cmd": "sudo npm install -g pyright",
+                        "workspace": ""
+                    }
+                ]
+            }
+        }
+    }
+}
