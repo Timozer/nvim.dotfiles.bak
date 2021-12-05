@@ -1,4 +1,3 @@
-
 if 1 ~= vim.fn.has "nvim-0.5.1" then
   vim.api.nvim_err_writeln "This plugins requires neovim 0.5.1"
   vim.api.nvim_err_writeln "Please update your neovim."
@@ -71,6 +70,38 @@ function ctrlp.load_command(start_line, end_line, count, cmd, ...)
     for _, arg in ipairs(args) do
         print(arg)
     end
+    local Popup = require("nui.popup")
+    local event = require("nui.utils.autocmd").event
+
+    local popup = Popup({
+        enter = true,
+        focusable = true,
+        border = {
+            -- style = "rounded",
+            style = { "╭", "─", "╮", "│", "╯", "─", "╰", "│" },
+            -- highlight = "FloatBorder",
+        },
+        position = "50%",
+        size = {
+            width = "80%",
+            height = "60%",
+        },
+        buf_options = {
+            modifiable = true,
+            readonly = false,
+        },
+    })
+
+    -- mount/open the component
+    popup:mount()
+
+    -- unmount component when cursor leaves buffer
+    popup:on(event.BufLeave, function()
+        popup:unmount()
+    end)
+
+    -- set content
+    vim.api.nvim_buf_set_lines(popup.bufnr, 0, 1, false, { "Hello World" })
 --   if cmd == nil then
 --     run_command { cmd = "builtin" }
 --     return
