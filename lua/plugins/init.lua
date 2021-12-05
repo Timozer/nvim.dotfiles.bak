@@ -28,8 +28,10 @@ local plugins = {
     },
     lualine = {
         'lualine.nvim',
-        requires = {'nvim-web-devicons', opt = true},
-        -- after = 'nvim_gps',
+        requires = {
+            {'nvim-gps', opt=true},
+            {'nvim-web-devicons', opt = true},
+        },
         config = require('plugins.config.lualine').init
     },
     -- editor
@@ -88,9 +90,9 @@ local plugins = {
     --},
     luasnip = {
         'LuaSnip',
-        opt = true,
-        after = 'nvim-cmp',
-        requires = { 'friendly-snippets', opt = true },
+        -- opt = true,
+        -- after = 'nvim-cmp',
+        requires = { 'friendly-snippets' },
         config = function()
             if not packer_plugins["LuaSnip"].loaded then
                 vim.cmd [[packadd LuaSnip]]
@@ -105,17 +107,21 @@ local plugins = {
             require("luasnip/loaders/from_vscode").load()
         end
     },
+    lspkind = {
+        'lspkind-nvim'
+    },
     nvim_cmp = {
         'nvim-cmp',
         -- opt = true,
         -- event = { 'InsertEnter' },
+        after = 'lspkind-nvim',
         requires = {
             {'cmp_luasnip', after = 'LuaSnip'},
             {'cmp-buffer', after = 'cmp_luasnip'},
             {'cmp-nvim-lsp', after = 'cmp-buffer'},
             {'cmp-path', after = 'cmp-nvim-lsp'},
             {'cmp-cmdline', after = 'cmp-path' },
-            {'lspkind-nvim', after = 'cmp-cmdline'},
+            {'lspkind-nvim'},
         },
         config = require('plugins.config.nvim_cmp').init
     },

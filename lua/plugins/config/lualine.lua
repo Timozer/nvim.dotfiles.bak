@@ -1,13 +1,21 @@
 local config = {}
 
-function config.init()
-    -- local gps = require("nvim-gps")
+local gps_location = function()
+    return require('nvim-gps').get_location()
+end
 
+local gps_available = function()
+    return require('nvim-gps').is_available()
+end
+
+function config.init()
     require('lualine').setup {
         options = {
             icons_enabled = true,
             theme = 'onedark',
-            disabled_filetypes = {},
+            disabled_filetypes = {
+                'NvimTree', 'OUTLINE',
+            },
             component_separators = '|',
             section_separators = {left = '', right = ''}
         },
@@ -16,7 +24,7 @@ function config.init()
             lualine_a = {'filename'},
             lualine_b = {{'branch'}, {'diff'}},
             lualine_c = {
-                -- {gps.get_location, condition = gps.is_available},
+                {gps_location, condition = gps_available},
             },
             lualine_x = {
                 {

@@ -16,9 +16,6 @@ function config.init()
     if not packer_plugins["nvim-ts-context-commentstring"].loaded then
         vim.cmd [[packadd nvim-ts-context-commentstring]]
     end
-    if not packer_plugins["nvim-gps"].loaded then
-        vim.cmd [[packadd nvim-gps]]
-    end
 
     vim.api.nvim_command('set foldmethod=expr')
     vim.api.nvim_command('set foldexpr=nvim_treesitter#foldexpr()')

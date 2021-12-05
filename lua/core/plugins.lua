@@ -8,6 +8,7 @@ function plugins:init()
 end
 
 function plugins:load_plugins(plgs)
+    vim.cmd [[ packadd packer.nvim ]]
     local util = require('packer.util')
     require('packer').startup({function(use)
         for key, val in pairs(plgs) do
