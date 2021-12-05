@@ -29,7 +29,6 @@ local plugins = {
     lualine = {
         'lualine.nvim',
         requires = {
-            {'nvim-gps', opt=true},
             {'nvim-web-devicons', opt = true},
         },
         config = require('plugins.config.lualine').init
@@ -141,7 +140,6 @@ local plugins = {
             {'nvim-treesitter-context', opt = true},
             {'nvim-ts-rainbow', opt = true},
             {'nvim-ts-context-commentstring', opt = true},
-            {'nvim-gps', opt = true, config = require('plugins.config.nvim_gps').init },
         },
         config = require('plugins.config.treesitter').init
     },
