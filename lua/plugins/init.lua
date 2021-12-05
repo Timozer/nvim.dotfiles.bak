@@ -33,6 +33,9 @@ local plugins = {
         },
         config = require('plugins.config.lualine').init
     },
+    nui_nvim = {
+        'nui.nvim'
+    },
     -- editor
     vim_easy_align = {
         'vim-easy-align',
