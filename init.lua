@@ -165,3 +165,6 @@ for plugin, _ in pairs(all_plgs) do
         utils:bind_keymaps(require('plugins.keymap.'..plugin))
     end
 end
+
+require('ctrlp_files').setup()
+require('core.ctrlp').list_extensions()
