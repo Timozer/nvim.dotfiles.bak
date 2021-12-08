@@ -2,16 +2,50 @@ require('lib.functions')
 
 Border = class('Border')
 
-function Border:ctor(widget)
-    widget_size = widget.size
+Border.STYLE_NONE = 'none'
+Border.STYLE_SHADOW = 'shadow'
+Border.STYLE_DOUBLE = {"╔", "═", "╗", "║", "╝", "═", "╚", "║"}
+Border.STYLE_ROUNDED = { "╭", "─", "╮", "│", "╯", "─", "╰", "│" }
+Border.STYLE_SINGLE = { "┌", "─", "┐", "│", "┘", "─", "└", "│" }
+Border.STYLE_SOLID = { "▛", "▀", "▜", "▐", "▟", "▄", "▙", "▌" }
+
+function Border:ctor(widget, style)
+    self.widget = widget
+    self.style = style
+
     self.winopts = {
-        style = "minimal",
-        relative = "editor",
-        width = widget_size + 2,
-        height = win_height + 2,
-        row = row - 1,
-        col = col - 1
+        style    = "minimal",
+        relative = widget.relative,
+        width    = self.widget.size.width + 2,
+        height   = self.widget.size.height + 2,
+        row      = self.widget.pos.row - 1,
+        col      = self.widget.pos.col - 1,
     }
+end
+
+function Border:Show()
+    if self.style == Border.STYLE_NONE or self.style == Border.STYLE_SHADOW then
+        return
+    end
+
+    self.bufnr = vim.api.nvim_create_buf(false, true)
+
+    local context = { 
+        self.style[1] .. string.rep(self.style[2], self.widget.size.width) .. self.style[3] 
+    }
+    local middle_line = self.style[8] .. string.rep(' ', self.widget.size.width) .. self.style[4]
+    for i=1, self.widget.size.height do
+        table.insert(context, middle_line)
+    end
+    table.insert(
+        context, 
+        self.style[7] .. string.rep(self.style[6], self.widget.size.width) .. self.style[5]
+        )
+
+    vim.api.nvim_buf_set_lines(self.bufnr, 0, -1, false, context)
+    vim.api.nvim_buf_set_option(self.bufnr, 'modifiable', false)
+
+    self.winid = vim.api.nvim_open_win(self.bufnr, true, self.winopts)
 end
 
 Widget = class('Widget')
@@ -89,10 +123,30 @@ function CalcWinPos(pos, win_size, container_size)
     return { row = row, col = col, }
 end
 
+local opts = {
+    relative = Widget.RELATIVE_WIN,
+    size = '80%',
+    pos = '50%',
+    bufopts = {
+        buflisted = false,
+        modifiable = false,
+        readonly = true,
+    },
+    winopts = {
+    },
+    style = 'minimal',
+    enter = true,
+    border = Border.STYLE_ROUNDED,
+}
+
 function Widget:ctor(opts, parent)
     self.bufnr  = -1
     self.winid  = -1
     self.hidden = true
+
+    self.relative = opts.relative or Widget.RELATIVE_WIN
+
+    local container_info = GetContainerInfo({ relative = self.relative })
 
     -- size format:
     --     1. size = '80%'
@@ -100,12 +154,12 @@ function Widget:ctor(opts, parent)
     --     3. size = 80
     --     4. size = { width = 80, height = 80 }
     self.size = opts.size or '80%'
-    -- position format, pos is the window's center:
-    --     1. position = '50%'
-    --     2. position = { row = '80%', col = '80%' }
-    --     3. position = 50
-    --     4. position = { row = 50, col = 50 }
-    self.position = opts.position or '50%'
+    -- pos format, pos is the window's center:
+    --     1. pos = '50%'
+    --     2. pos = { row = '80%', col = '80%' }
+    --     3. pos = 50
+    --     4. pos = { row = 50, col = 50 }
+    self.pos = opts.pos or '50%'
 
     self.bufopts = opts.bufopts or {
         buflisted = false,
@@ -113,32 +167,25 @@ function Widget:ctor(opts, parent)
         readonly = true,
     }
 
-    -- win options, don't set {width, height, row, col}, it will be override by
+    -- win options, don't set {border, width, height, row, col}, it will be override by
     -- size
-    self.winopts = opts.winopts or {
-        relative = 'editor',
-        style    = 'minimal',
-        border   = 'rounded',
-    }
+    self.winopts = opts.winopts or {}
 
-    local info = GetContainerInfo({ relative = self.winopts.relative })
-    self.size = CalcWinSize(self.size, info.size)
-    self.position = CalcWinPos(self.position, self.size, info.size)
-
-    self.winopts.width  = self.size.width
-    self.winopts.height = self.size.height
-    self.winopts.row    = self.position.row
-    self.winopts.col    = self.position.col
+    self.size = CalcWinSize(self.size, container_info.size)
+    self.pos = CalcWinPos(self.pos, self.size, container_info.size)
 
     self.enter = opts.enter or true
+
+    self.style = opts.style or 'minimal'
+    self.border = opts.border or Border.STYLE_NONE
 end
 
 function Widget:Width()
-    return self.width
+    return self.size.width
 end
 
 function Widget:Height()
-    return self.height
+    return self.size.height
 end
 
 function Widget:IsHidden()
@@ -148,6 +195,11 @@ end
 function Widget:Show()
     if not self.hidden then
         return
+    end
+
+    if self.border then
+        local border = Border.new(self, Border.STYLE_ROUNDED)
+        border:Show()
     end
 
     if self.bufnr < 1 then
@@ -160,7 +212,22 @@ function Widget:Show()
     end
 
     if self.winid < 1 then
-        self.winid = vim.api.nvim_open_win(self.bufnr, self.enter, self.winopts)
+        self.winid = vim.api.nvim_open_win(
+                self.bufnr,
+                self.enter,
+                {
+                    relative = self.relative,
+                    border   = 'none',
+                    width    = self.size.width,
+                    height   = self.size.height,
+                    row      = self.pos.row,
+                    col      = self.pos.col,
+                    style    = self.style,
+                }
+            )
+        for key, val in pairs(self.winopts) do
+            vim.api.nvim_win_set_option(self.winid, key, val)
+        end
     end
 
     self.hidden = false
