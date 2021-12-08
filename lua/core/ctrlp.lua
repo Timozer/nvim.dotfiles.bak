@@ -4,6 +4,8 @@ if 1 ~= vim.fn.has "nvim-0.5.1" then
   return
 end
 
+require('lib.gui.widget')
+
 local ctrlp = {
     extensions = {}
 }
@@ -71,12 +73,9 @@ function ctrlp.load_command(start_line, end_line, count, cmd, ...)
         print(arg)
     end
 
-    local win = require('lib.gui.widget').new({})
+    local win = Widget.new({})
     win:Show()
 
-
-    -- popup_state.loading = false
-    -- popup_state.mounted = true
 
 --     local Popup = require("nui.popup")
 --     local event = require("nui.utils.autocmd").event
