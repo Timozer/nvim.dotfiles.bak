@@ -5,6 +5,8 @@ if 1 ~= vim.fn.has "nvim-0.5.1" then
 end
 
 require('lib.gui.widget')
+require('lib.gui.border')
+require('lib.gui.gobject')
 
 local ctrlp = {
     extensions = {}

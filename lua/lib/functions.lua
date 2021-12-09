@@ -1,3 +1,12 @@
+function instanceof(obj, classname)
+    if not obj or not obj.__cname then
+        return false
+    end
+    if obj.__cname == classname then
+        return true
+    end
+    return instanceof(obj.super, classname)
+end
 
 function class(classname, super)
     local superType = type(super)
@@ -57,5 +66,12 @@ function class(classname, super)
     end
 
     return cls
+end
+
+function ToNumber(val)
+    if type(val) == 'string' and string.sub(val, -1) == '%' then
+        return tonumber(string.sub(val, 1, #val - 1)) / 100
+    end
+    return tonumber(val)
 end
 
