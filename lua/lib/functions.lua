@@ -68,6 +68,64 @@ function class(classname, super)
     return cls
 end
 
+function array(...)
+    local new_array = {}
+
+    local __data__ = {...}
+
+    local __methods__ = {}
+    function __methods__:insert(v, at)
+        local len = #__data__ + 1
+        at = type(at) == 'number' and at or len
+        at = math.min(at, len)
+        table.insert(__data__, at, v)
+    end
+    function __methods__:removeAt(at)
+        at = type(at) == 'number' and at or #__data__
+        table.remove(__data__, at)
+    end
+    function __methods__:print()
+        print('---> array content begin  <---')
+        for i, v in ipairs(__data__) do
+            print(string.format('[%s] => ', i), v)
+        end
+        print('---> array content end  <---')
+    end
+
+    -- extend methods here
+
+    local mt = {
+        __index = function(t, k)
+            if type(k) == 'number' then
+                if __data__[k] then
+                    return __data__[k]
+                end
+            else
+                if __methods__[k] then
+                    return __methods__[k]
+                end
+            end
+        end,
+        __newindex = function(t, k, v)
+            assert(type(k) == 'number', string.format('error: invalid index [%s]', tostring(k)))
+            if k == 0 or k > 
+            if nil == __data__[k] then
+                print(string.format('warning : [%s] index out of range.', tostring(k)))
+                return
+            end
+            if nil == v then
+                print(string.format('warning : can not remove element by using  `nil`.'))
+                return
+            end
+            __data__[k] = v
+        end,
+        __size = 0,
+    }
+    setmetatable(new_array, mt)
+
+    return new_array
+end
+
 function ToNumber(val)
     if type(val) == 'string' and string.sub(val, -1) == '%' then
         return tonumber(string.sub(val, 1, #val - 1)) / 100
