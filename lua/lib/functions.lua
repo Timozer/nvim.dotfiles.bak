@@ -71,58 +71,86 @@ end
 function array(...)
     local new_array = {}
 
-    local __data__ = {...}
+    local __data__ = {}
+    local __size__ = 0
 
     local __methods__ = {}
-    function __methods__:insert(v, at)
-        local len = #__data__ + 1
-        at = type(at) == 'number' and at or len
-        at = math.min(at, len)
-        table.insert(__data__, at, v)
+
+    function __methods__:append(v)
+        table.insert(__data__, v)
+        __size__ = __size__ + 1
     end
-    function __methods__:removeAt(at)
-        at = type(at) == 'number' and at or #__data__
-        table.remove(__data__, at)
+
+    function __methods__:size()
+        return __size__
     end
-    function __methods__:print()
-        print('---> array content begin  <---')
-        for i, v in ipairs(__data__) do
-            print(string.format('[%s] => ', i), v)
-        end
-        print('---> array content end  <---')
+
+    function __methods__:insert(i, v)
+        assert(
+            type(i) == 'number' and i ~= 0 and math.abs(i) <= __size__,
+            'invalid index'
+        )
+        table.insert(__data__, i, v)
+        __size__ = __size__ + 1
+    end
+
+    function __methods__:erase(i)
+        assert(
+            type(i) == 'number' and i ~= 0 and math.abs(i) <= __size__,
+            'invalid index'
+        )
+        table.remove(__data__, i)
+        __size__ = __size__ - 1
+    end
+
+    function __methods__:clear()
+        __data__ = {}
+        __size__ = 0
     end
 
     -- extend methods here
-
     local mt = {
-        __index = function(t, k)
-            if type(k) == 'number' then
-                if __data__[k] then
-                    return __data__[k]
-                end
-            else
-                if __methods__[k] then
-                    return __methods__[k]
-                end
-            end
-        end,
-        __newindex = function(t, k, v)
-            assert(type(k) == 'number', string.format('error: invalid index [%s]', tostring(k)))
-            if k == 0 or k > 
-            if nil == __data__[k] then
-                print(string.format('warning : [%s] index out of range.', tostring(k)))
-                return
-            end
-            if nil == v then
-                print(string.format('warning : can not remove element by using  `nil`.'))
-                return
-            end
-            __data__[k] = v
-        end,
-        __size = 0,
     }
-    setmetatable(new_array, mt)
 
+    mt.__index = function(t, k)
+        if type(k) == 'number' then
+            assert(
+                k ~= 0 and math.abs(k) <= __size__,
+                string.format('[%s] index out of range', tostring(k))
+            )
+            return __data__[k]
+        end
+
+        assert(__methods__[k], string.format('unknow key [%s]', tostring(k)))
+        return __methods__[k]
+    end
+
+    mt.__newindex = function(t, k, v)
+        assert(type(k) == 'number', string.format('error: invalid index [%s]', tostring(k)))
+        assert(
+            k ~= 0 and math.abs(k) <= __size__,
+            string.format('[%s] index out of range', tostring(k))
+        )
+        __data__[k] = v
+    end
+
+    mt.__tostring = function(t)
+        local ret = '['
+        i = 1
+        while i <= __size__ do
+            ret = string.format('%s%s, ', ret, tostring(__data__[i]))
+            i = i + 1
+        end
+        ret = string.format('%s\b\b]', ret)
+        return ret
+    end
+
+    for _, v in ipairs{...} do
+        __methods__:append(v)
+    end
+
+
+    setmetatable(new_array, mt)
     return new_array
 end
 
