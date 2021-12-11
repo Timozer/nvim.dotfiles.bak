@@ -1,5 +1,8 @@
 require('lib.functions')
 require('lib.gui.common')
+require('lib.gui.tools.rect')
+require('lib.gui.tools.point')
+require('lib.gui.tools.size')
 
 GObject = class('GObject')
 
@@ -17,11 +20,24 @@ function GObject:ctor(opts, parent)
 
     self.relative = opts.relative or GObject.RELATIVE_EDITOR
 
+    self.parent = self:__DetectParent(self.relative, parent)
+
+    -- geometry format:
+    --     1. geometry = 0.5 ==> { x = 0.5, y = 0.5, width = 0.5, height = 0.5 }
+    --     2. geometry = { position = 0.5, size = 0.8 } == > { x = 0.5, y = 0.5, width = 0.8, height = 0.8 }
+    --     3. geometry = { x = 0.5, y = 0.5, width = 0.5, height = 0.5 }
+    self.geometry = opts.geometry or 0.5
+
+    self.bufopts = opts.bufopts or {}
+    self.winopts = opts.winopts or {}
+end
+
+function GObject:__DetectParent(relative, parent)
     if not parent then
-        if self.relative == GObject.RELATIVE_EDITOR then
-            parent = 'editor'
-        elseif self.relative == GObject.RELATIVE_WIN or self.relative == GObject.RELATIVE_CURSOR then
-            parent = 0
+        if relative == GObject.RELATIVE_EDITOR then
+            return 'editor'
+        elseif relative == GObject.RELATIVE_WIN or relative == GObject.RELATIVE_CURSOR then
+            return vim.fn.win_getid()
         else
             assert(false, "unkown window's relative")
         end
@@ -29,24 +45,7 @@ function GObject:ctor(opts, parent)
         type(parent) == 'table' and not instanceof(parent, 'GObject') then
         assert(false, "invalid parent")
     end
-
-    info = GetParentInfo(parent)
-
-    -- size format:
-    --     1. size = '80%'
-    --     2. size = { width = '80%', height = '80%' }
-    --     3. size = 80
-    --     4. size = { width = 80, height = 80 }
-    self.size = CalcWinSize(opts.size or '50%', info.size)
-    -- pos format, pos is the window's center:
-    --     1. pos = '50%'
-    --     2. pos = { row = '80%', col = '80%' }
-    --     3. pos = 50
-    --     4. pos = { row = 50, col = 50 }
-    self.pos  = CalcWinPos(opts.pos or '50%', info.pos, self.size, info.size)
-
-    self.bufopts = opts.bufopts or {}
-    self.winopts = opts.winopts or {}
+    return parent
 end
 
 function GObject:Create()
@@ -89,10 +88,29 @@ function GObject:Show()
     assert(false, 'should be overwrite by sub class')
 end
 
-function GObject:Width()
-    return self.size.width
+function GObject:__SetupGeometry()
 end
 
-function GObject:Height()
-    return self.size.height
+function GObject:Geometry()
+    return self.geometry
+end
+
+function GObject:SetGeometry(geometry)
+    assert(instanceof(geometry, 'Rect'), 'invalid geometry')
+    self.geometry = geometry
+end
+
+function GObject:ParentGeometry()
+    if type(self.parent) == 'string' then
+        assert(self.parent == 'editor', string.format('invalid parent [%s]', self.parent))
+        return Rect.new(Point.new(0, 0), GetEditorSize())
+    end
+
+    if type(self.parent) == 'table' and instanceof(self.parent, 'GObject') then
+        return self.parent:Geometry()
+    end
+
+    assert(vim.api.nvim_win_is_valid(self.parent), "invalid parent")
+    pos = vim.api.nvim_win_get_position(parent)
+    return Rect.new(Point.new(pos[2], pos[1]), GetWindowSize(self.parent))
 end

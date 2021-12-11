@@ -1,4 +1,4 @@
-require('lib.class')
+require('lib.functions')
 
 LayoutItem = class('LayoutItem')
 

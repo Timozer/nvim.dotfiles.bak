@@ -1,32 +1,18 @@
 require('lib.functions')
+require('lib.gui.tools.size')
 
 function GetEditorSize()
-    return { width = vim.o.columns, height = vim.o.lines }
+    return Size.new(vim.o.columns, vim.o.lines)
 end
 
 function GetWindowSize(winid)
     if not win or not vim.api.nvim_win_is_valid(buf) then
-        return { width = 0, height = 0 }
+        return Size.INVALID_SIZE
     end
-    return {
-        width = vim.api.nvim_win_get_width(winid),
-        height = vim.api.nvim_win_get_height(winid),
-    }
-end
-
-function GetParentInfo(parent)
-    if type(parent) == 'string' then
-        assert(parent == 'editor', "if window's parent is string, it should be editor")
-        return { size = GetEditorSize(), pos = { row = 0, col = 0 } }
-    end
-
-    if type(parent) == 'table' and instanceof(parent, 'GObject') then
-        return { size = parent.size, pos = parent.pos }
-    end
-
-    assert(vim.api.nvim_win_is_valid(parent), "window's parent is invalid")
-    pos = vim.api.nvim_win_get_position(parent)
-    return { size = GetWindowSize(parent), pos = { row = pos[1], col = pos[2] } }
+    return Size.new(
+        vim.api.nvim_win_get_width(winid),
+        vim.api.nvim_win_get_height(winid)
+    )
 end
 
 function CalcWinSize(size, parent_size)
