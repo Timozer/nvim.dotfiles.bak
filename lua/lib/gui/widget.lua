@@ -1,6 +1,42 @@
 require('lib.functions')
 require('lib.gui.gobject')
 require('lib.gui.border')
+require('lib.gui.layout')
+
+WidgetItem = class('WidgetItem', LayoutItem)
+
+function WidgetItem:ctor(widget)
+    assert(instanceof(widget, 'Widget'), 'invalid widget')
+    self.widget = widget
+end
+
+function LayoutItem:SizeHint()
+    assert(false, 'pure virtual method called')
+end
+
+function LayoutItem:MinimumSize()
+    assert(false, 'pure virtual method called')
+end
+
+function LayoutItem:MaximumSize()
+    assert(false, 'pure virtual method called')
+end
+
+function LayoutItem:Geometry()
+    assert(false, 'pure virtual method called')
+end
+
+function LayoutItem:SetGeometry()
+    assert(false, 'pure virtual method called')
+end
+
+function LayoutItem:Widget()
+    return self.widget
+end
+
+function LayoutItem:IsEmpty()
+    return not self.widget or self.widget:IsHidden() 
+end
 
 Widget = class('Widget', GObject)
 

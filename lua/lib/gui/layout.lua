@@ -1,4 +1,4 @@
-local class = require('lib.class').class
+require('lib.class')
 
 LayoutItem = class('LayoutItem')
 
@@ -6,7 +6,19 @@ function LayoutItem.new(...)
     assert(false, 'abstract class cannot be instanced')
 end
 
-function LayoutItem:ctor()
+function LayoutItem:ctor(...)
+end
+
+function LayoutItem:SizeHint()
+    assert(false, 'pure virtual method called')
+end
+
+function LayoutItem:MinimumSize()
+    assert(false, 'pure virtual method called')
+end
+
+function LayoutItem:MaximumSize()
+    assert(false, 'pure virtual method called')
 end
 
 function LayoutItem:Geometry()
@@ -14,24 +26,21 @@ function LayoutItem:Geometry()
 end
 
 function LayoutItem:SetGeometry()
-    assert(false, 'pure virtual method called')
+    return nil
 end
 
 function LayoutItem:Layout()
-    assert(false, 'pure virtual method called')
+    return nil
 end
 
 function LayoutItem:Widget()
-    assert(false, 'pure virtual method called')
-end
-
-function LayoutItem:SizeHint()
-    assert(false, 'pure virtual method called')
+    return nil
 end
 
 function LayoutItem:IsEmpty()
     assert(false, 'pure virtual method called')
 end
+
 
 Layout = class('Layout', LayoutItem)
 
@@ -45,6 +54,7 @@ function Layout:ctor(parent)
     end
     self.parent = parent
     self.spacing = 0
+    self.geometry = { size = { width = 0, height = 0 }, pos = { row = 0, col = 0} }
 end
 
 function Layout:ParentWidget()
@@ -91,11 +101,24 @@ function Layout:Count()
     assert(false, 'pure virtual method called')
 end
 
+function Layout:Geometry()
+    return self.geometry
+end
+
+function Layout:SetGeometry(geometry)
+    if geometry then
+        self.geometry = geometry
+    end
+end
+
 function Layout:Spacing()
     return self.spacing
 end
 
 function Layout:SetSpacing(spacing)
+    if spacing < 0 then
+        return
+    end
     self.spacing = spacing
 end
 
@@ -111,27 +134,3 @@ function Layout:IsEmpty()
     end
     return true
 end
-
-BoxLayout = class('BoxLayout', Layout)
-
-BoxLayout.DIRECTION_HORIZONTAL = 'horizontal'
-BoxLayout.DIRECTION_VERTICAL = 'vertical'
-
-function BoxLayout:ctor(direction, parent)
-    self.super:ctor(parent)
-    self.direction = direction
-end
-
-
-HBoxLayout = class('HBoxLayout', Layout)
-
-function HBoxLayout:ctor(parent)
-    self.super:ctor(parent)
-end
-
-VBoxLayout = class('VBoxLayout', Layout)
-function VBoxLayout:ctor(parent)
-    self.super:ctor(parent)
-end
-
-return hbox
