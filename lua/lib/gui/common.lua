@@ -15,62 +15,6 @@ function GetWindowSize(winid)
     )
 end
 
-function CalcWinSize(size, parent_size)
-    if type(size) ~= "table" then
-        size = { width = size, height = size, }
-    end
-
-    local width = ToNumber(size.width)
-    assert(width, 'invalid size.width')
-    if math.floor(width) < width then
-        if width > 1 then
-            width = 1
-        end
-        width = math.floor(width * parent_size.width)
-    elseif width > parent_size.width then
-        width = parent_size.width
-    end
-
-    local height = ToNumber(size.height)
-    assert(height, 'invalid size.height')
-    if math.floor(height) < height then
-        if height > 1 then
-            height = 1
-        end
-        height = math.floor(height * parent_size.height)
-    elseif height > parent_size.height then
-        height = parent_size.height
-    end
-
-    return { width = width, height = height, }
-end
-
-function CalcWinPos(pos, parent_pos, win_size, parent_size)
-    if type(pos) ~= 'table' then
-        pos = { row = pos, col = pos, }
-    end
-
-    local row = ToNumber(pos.row)
-    assert(row, 'invalid pos.row')
-    if math.floor(row) < row then
-        if row > 1 then
-            row = 1
-        end
-        row = math.floor(row * (parent_size.height - win_size.height))
-    end
-
-    local col = ToNumber(pos.col)
-    assert(col, 'invalid pos.col')
-    if math.floor(col) < col then
-        if col > 1 then
-            col = 1
-        end
-        col = math.floor(col * (parent_size.width - win_size.width))
-    end
-
-    return { row = row + parent_pos.row, col = col + parent_pos.col, }
-end
-
 function SetBufOptions(buf, opts)
     if not buf or not vim.api.nvim_buf_is_valid(buf) then
         return

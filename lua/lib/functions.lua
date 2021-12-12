@@ -154,10 +154,25 @@ function array(...)
     return new_array
 end
 
-function ToNumber(val)
-    if type(val) == 'string' and string.sub(val, -1) == '%' then
-        return tonumber(string.sub(val, 1, #val - 1)) / 100
+function deepcopy(orig)
+    local orig_type = type(orig)
+    local copy
+    if orig_type == 'table' then
+        copy = {}
+        for orig_key, orig_value in next, orig, nil do
+            copy[deepcopy(orig_key)] = deepcopy(orig_value)
+        end
+        setmetatable(copy, deepcopy(getmetatable(orig)))
+    else -- number, string, boolean, etc
+        copy = orig
     end
-    return tonumber(val)
+    return copy
 end
 
+function length(tbl)
+  local n = 0
+  for n in pairs(tbl) do 
+    n = n + 1 
+  end
+  return n
+end
