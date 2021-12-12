@@ -6,7 +6,7 @@ function GetEditorSize()
 end
 
 function GetWindowSize(winid)
-    if not win or not vim.api.nvim_win_is_valid(buf) then
+    if not winid or not vim.api.nvim_win_is_valid(winid) then
         return Size.INVALID_SIZE
     end
     return Size.new(

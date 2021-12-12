@@ -75,7 +75,21 @@ function ctrlp.load_command(start_line, end_line, count, cmd, ...)
         print(arg)
     end
 
-    local win = Widget.new({})
+    local opts = {
+        relative = Widget.RELATIVE_WIN,
+        geometry = { '0.5', '0.5', '0.8', '1' },
+        bufopts = {
+            buflisted = false,
+            modifiable = false,
+            readonly = true,
+        },
+        winopts = {
+        },
+        enter = true,
+        border = Border.STYLE_ROUNDED,
+    }
+
+    local win = Widget.new(opts, nil)
     win:Show()
 
 

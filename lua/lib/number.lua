@@ -5,7 +5,7 @@ Number = class('Number')
 function Number:ctor(number)
     assert(
         type(number) == 'string' and tonumber(number) ~= nil,
-        string.format('invalid number [%s]', tostring(number)
+        string.format('invalid number [%s]', tostring(number))
     )
 
     self._val = number
@@ -13,9 +13,9 @@ function Number:ctor(number)
 end
 
 function Number:IsFloat()
-    return string.find(self._val, '.') ~= nil
+    return string.find(self._val, '%.') ~= nil
 end
 
 function Number:IsInteger()
-    return string.find(self._val, '.') == nil
+    return string.find(self._val, '%.') == nil
 end

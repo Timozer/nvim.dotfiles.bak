@@ -38,8 +38,10 @@ function GObject:ctor(opts, parent)
     --     { '1' }
     --     { '1', '1' }
     --     { '1', '1', '1', '1' }
+    print(dump(opts.geometry))
     self.geometry = opts.geometry or { '0.5' }
-    assert(table(self.geometry) == 'table', 'invalid geometry')
+    print('cls: '..self.__cname..' '..dump(self.geometry))
+    assert(type(self.geometry) == 'table', 'invalid geometry')
     for _, val in pairs(self.geometry) do
         assert(type(val) == 'string', 'invalid geometry')
     end
@@ -72,16 +74,18 @@ function GObject:Create()
         SetBufOptions(self.bufnr, self.bufopts)
     end
     if self.winid < 1 then
+        local geom = self:Geometry()
+        print(dump(geom))
         self.winid = vim.api.nvim_open_win(
             self.bufnr,
             true,
             {
                 style    = 'minimal',
                 relative = self.relative,
-                width    = self.size.width,
-                height   = self.size.height,
-                row      = self.pos.row,
-                col      = self.pos.col,
+                width    = geom.width,
+                height   = geom.height,
+                row      = geom.y,
+                col      = geom.x,
             }
         )
         assert(self.winid, 'failed to create window')
@@ -106,9 +110,10 @@ function GObject:Show()
 end
 
 function GObject:__SetupGeometry()
+    print('setup geomerty: cls: '..self.__cname..' '..dump(self.geometry))
     if not instanceof(self.geometry, 'Rect') then
         local geom = deepcopy(self.geometry)
-        local n = len(geom)
+        local n = length(geom)
         if n == 1 then
             self.geometry.x = geom[1]
             self.geometry.y = geom[1]
@@ -131,7 +136,11 @@ function GObject:__SetupGeometry()
         end
     end
 
+    print('widget geom: '..dump(self.geometry))
     local pgeom = self:ParentGeometry()
+    print(string.format('parent geom: x: %i y: %i width: %i height: %i',
+            pgeom.x, pgeom.y, pgeom.width, pgeom.height
+        ))
     if type(self.geometry.width) == 'string' then
         local width = Number.new(self.geometry.width)
         if width:IsFloat() then
@@ -243,6 +252,7 @@ function GObject:ParentGeometry()
         return self.parent:Geometry()
     end
 
+    print(self.parent)
     assert(vim.api.nvim_win_is_valid(self.parent), "invalid parent")
     pos = vim.api.nvim_win_get_position(parent)
     return Rect.new(Point.new(pos[2], pos[1]), GetWindowSize(self.parent))

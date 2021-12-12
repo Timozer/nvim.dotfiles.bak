@@ -40,21 +40,6 @@ end
 
 Widget = class('Widget', GObject)
 
-local opts = {
-    relative = Widget.RELATIVE_WIN,
-    size = '80%',
-    pos = '50%',
-    bufopts = {
-        buflisted = false,
-        modifiable = false,
-        readonly = true,
-    },
-    winopts = {
-    },
-    enter = true,
-    border = Border.STYLE_ROUNDED,
-}
-
 function Widget:ctor(opts, parent)
     self.super:ctor(opts, parent)
 
@@ -68,13 +53,17 @@ function Widget:ctor(opts, parent)
 
     self.enter = opts.enter or true
 
-    self.border = opts.border or Border.STYLE_NONE
+    self.border = nil
+    -- self.border = Border.new(self, {style = opts.border or Border.STYLE_NONE})
 
-    self.child_widgets = {}
+    self.child_widgets = array()
 end
 
-function Widget:IsHidden()
-    return self.hidden
+function Widget:SetGeometry(geometry)
+    self.super:SetGeometry(geometry)
+    if self.border then
+        self.border.dirty = true
+    end
 end
 
 function Widget:Show()
@@ -83,13 +72,20 @@ function Widget:Show()
     end
 
     if self.border then
-        local border = Border.new(self, { style = self.border })
-        border:Show()
+        self.border:Show()
     end
 
     self:Create()
 
+    for _, child in ipairs(self.child_widgets) do
+        child:Show()
+    end
+
     self.hidden = false
+end
+
+function Widget:IsHidden()
+    return self.hidden
 end
 
 function Widget:Layout()

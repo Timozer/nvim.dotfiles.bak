@@ -170,9 +170,22 @@ function deepcopy(orig)
 end
 
 function length(tbl)
-  local n = 0
-  for n in pairs(tbl) do 
-    n = n + 1 
-  end
-  return n
+    local ret = 0
+    for n in pairs(tbl) do 
+        ret = ret + 1 
+    end
+    return ret
+end
+
+function dump(o)
+   if type(o) == 'table' then
+      local s = '{ '
+      for k,v in pairs(o) do
+         if type(k) ~= 'number' then k = '"'..k..'"' end
+         s = s .. '['..k..'] = ' .. dump(v) .. ','
+      end
+      return s .. '} '
+   else
+      return tostring(o)
+   end
 end

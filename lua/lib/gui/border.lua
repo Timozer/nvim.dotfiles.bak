@@ -1,6 +1,7 @@
 require('lib.functions')
 require('lib.gui.common')
 require('lib.gui.gobject')
+require('lib.gui.tools.rect')
 
 Border = class('Border', GObject)
 
@@ -18,18 +19,22 @@ function Border:ctor(widget, opts)
     self.style = opts.style or Border.STYLE_NONE
 
     self.relative = self.widget.relative
-    self.size = {
-        width  = self.widget.size.width + 2,
-        height = self.widget.size.height + 2,
-    }
-    self.pos = {
-        row = self.widget.pos.row - 1,
-        col = self.widget.pos.col - 1,
-    }
+
+    self.dirty = true
 
     self.bufopts.buflisted = false
     self.bufopts.modifiable = true
     self.winopts.winblend = self.winopts.winblend or 100
+end
+
+function Border:__SetupGeometry()
+    local geom = self.widget:Geometry()
+    self.geometry = Rect.new(geom.x - 1, geom.y - 1, geom.width + 2, geom.height + 2)
+    self.dirty = false
+end
+
+function Border:SetGeometry(geometry)
+    assert(false, "don't call Border:SetGeometry directly")
 end
 
 function Border:Show()
@@ -39,16 +44,18 @@ function Border:Show()
 
     self:Create()
 
+    local geom = self.widget:Geometry()
+
     local context = { 
-        self.style[1] .. string.rep(self.style[2], self.widget.size.width) .. self.style[3] 
+        self.style[1] .. string.rep(self.style[2], geom.width) .. self.style[3] 
     }
-    local middle_line = self.style[8] .. string.rep(' ', self.widget.size.width) .. self.style[4]
-    for i=1, self.widget.size.height do
+    local middle_line = self.style[8] .. string.rep(' ', geom.width) .. self.style[4]
+    for i=1, geom.height do
         table.insert(context, middle_line)
     end
     table.insert(
         context, 
-        self.style[7] .. string.rep(self.style[6], self.widget.size.width) .. self.style[5]
+        self.style[7] .. string.rep(self.style[6], geom.width) .. self.style[5]
         )
 
     vim.api.nvim_buf_set_lines(self.bufnr, 0, -1, false, context)
