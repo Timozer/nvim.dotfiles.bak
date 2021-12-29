@@ -1,136 +1,143 @@
 require('lib.functions')
+require('lib.gui.widget')
+require('PLoop')
 
-LayoutItem = class('LayoutItem')
+PLoop(function(_ENV)
+    namespace "gui"
 
-function LayoutItem.new(...)
-    assert(false, 'abstract class cannot be instanced')
-end
-
-function LayoutItem:ctor(...)
-end
-
-function LayoutItem:SizeHint()
-    assert(false, 'pure virtual method called')
-end
-
-function LayoutItem:MinimumSize()
-    assert(false, 'pure virtual method called')
-end
-
-function LayoutItem:MaximumSize()
-    assert(false, 'pure virtual method called')
-end
-
-function LayoutItem:Geometry()
-    assert(false, 'pure virtual method called')
-end
-
-function LayoutItem:SetGeometry()
-    return nil
-end
-
-function LayoutItem:Layout()
-    return nil
-end
-
-function LayoutItem:Widget()
-    return nil
-end
-
-function LayoutItem:IsEmpty()
-    assert(false, 'pure virtual method called')
-end
-
-
-Layout = class('Layout', LayoutItem)
-
-function Layout.new(...)
-    assert(false, 'abstract class cannot be instanced')
-end
-
-function Layout:ctor(parent)
-    if parent and  instanceof(parent, 'Widget') then
-        parent:SetLayout(self)
-    end
-    self.parent = parent
-    self.spacing = 0
-    self.geometry = { size = { width = 0, height = 0 }, pos = { row = 0, col = 0} }
-end
-
-function Layout:ParentWidget()
-    if parent and instanceof(parent, 'Layout') then
-        return parent:ParentWidget()
-    end
-    return parent
-end
-
-function Layout:AddChildLayout(layout)
-    assert(not layout.parent, 'layout already has a parent')
-    layout.parent = self
-    parentWidget = self:ParentWidget()
-    if parentWidget then
-        layout:ReparentChildWidgets(parentWidget)
-    end
-end
-
-function Layout:ReparentChildWidgets(parent)
-end
-
-function Layout:AddItem(item)
-    assert(false, 'pure virtual method called')
-end
-
-function Layout:AddWidget(widget)
-end
-
-function Layout:ItemAt(idx)
-    assert(false, 'pure virtual method called')
-end
-
-function Layout:TakeAt(idx)
-    assert(false, 'pure virtual method called')
-end
-
-function Layout:RemoveItem(item)
-end
-
-function Layout:RemoveWidget(widget)
-end
-
-function Layout:Count()
-    assert(false, 'pure virtual method called')
-end
-
-function Layout:Geometry()
-    return self.geometry
-end
-
-function Layout:SetGeometry(geometry)
-    if geometry then
-        self.geometry = geometry
-    end
-end
-
-function Layout:Spacing()
-    return self.spacing
-end
-
-function Layout:SetSpacing(spacing)
-    if spacing < 0 then
-        return
-    end
-    self.spacing = spacing
-end
-
-function Layout:IsEmpty()
-    local i = 1;
-    local item = self:ItemAt(i);
-    while item do
-        if not item:IsEmpty() then
-            return false
+    __Abstract__()
+    class "LayoutItem" (function(_ENV)
+        function LayoutItem(self, ...)
         end
-        i = i + 1
-        item = self:ItemAt(i);
-    end
-    return true
-end
+
+        __Abstract__()
+        function SizeHint(self)
+        end
+
+        __Abstract__()
+        function MinimumSize(self)
+        end
+
+        __Abstract__()
+        function MaximumSize(self)
+        end
+
+        __Abstract__()
+        function Geometry(self)
+        end
+
+        __Abstract__()
+        function SetGeometry(self, geom)
+        end
+
+        __Abstract__()
+        function Layout(self)
+            return nil
+        end
+
+        __Abstract__()
+        function Widget(self)
+            return nil
+        end
+
+        __Abstract__()
+        function IsEmpty(self)
+        end
+    end)
+
+    __Abstract__()
+    class "Layout" (function(_ENV)
+        inherit "LayoutItem"
+
+        function Layout(self, parent)
+            if parent and  Class.IsSubType(parent, 'Widget') then
+                parent:SetLayout(self)
+            end
+            self.parent = parent
+            self.spacing = 0
+            self.geometry = { size = { width = 0, height = 0 }, pos = { row = 0, col = 0} }
+        end
+
+        function ParentWidget(self)
+            if parent and Class.IsSubType(parent, 'Layout') then
+                return parent:ParentWidget()
+            end
+            return parent
+        end
+
+        function AddChildLayout(self, layout)
+            assert(not layout.parent, 'layout already has a parent')
+            layout.parent = self
+            parentWidget = self:ParentWidget()
+            if parentWidget then
+                layout:ReparentChildWidgets(parentWidget)
+            end
+        end
+
+        function ReparentChildWidgets(self, parent)
+        end
+
+        __Abstract__()
+        function AddItem(self, item)
+        end
+
+        __Abstract__()
+        function AddWidget(self, widget)
+        end
+
+        __Abstract__()
+        function ItemAt(self, idx)
+        end
+
+        __Abstract__()
+        function TakeAt(self, idx)
+        end
+
+        __Abstract__()
+        function RemoveItem(self, item)
+        end
+
+        __Abstract__()
+        function RemoveWidget(self, widget)
+        end
+
+        __Abstract__()
+        function Count(self)
+        end
+
+        function Geometry(self, )
+            return self.geometry
+        end
+
+        function SetGeometry(self, geometry)
+            if geometry then
+                self.geometry = geometry
+            end
+        end
+
+        function Spacing(self)
+            return self.spacing
+        end
+
+        function SetSpacing(self, spacing)
+            if spacing < 0 then
+                return
+            end
+            self.spacing = spacing
+        end
+
+        function IsEmpty(self)
+            local i = 1;
+            local item = self:ItemAt(i);
+            while item do
+                if not item:IsEmpty() then
+                    return false
+                end
+                i = i + 1
+                item = self:ItemAt(i);
+            end
+            return true
+        end
+    end)
+end)
+

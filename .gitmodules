@@ -1,0 +1,3 @@
+[submodule "lua/PLoop"]
+	path = lua/PLoop
+	url = https://github.com/kurapica/PLoop
