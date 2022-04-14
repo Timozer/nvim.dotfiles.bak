@@ -1,6 +1,14 @@
 local utils = require('core.utils')
 
 local basic_opts = {
+    encoding="utf-8",
+    fileencoding = "utf-8",
+    fileencodings="utf-8,ucs-bom,gbk,cp936,gb2312,gb18030",
+    scrolloff = 8,
+    sidescrolloff = 8,
+    number = true,
+    relativenumber = true,
+    signcolumn = "yes",
     background = "dark",
     termguicolors = true,
 	cul = true,
@@ -11,16 +19,13 @@ local basic_opts = {
     smartindent=true,
     smarttab=true,
     joinspaces=false,
-    wrap=true,
+    wrap=false,
 	tabstop = 4,
 	shiftwidth = 4,
 	softtabstop = 4,
 	expandtab = true,
-    number = true,
     completeopt="menu,menuone,noselect",
     sessionoptions="buffers,curdir,folds,options,localoptions,winsize,resize,winpos",
-    encoding="utf-8",
-    fileencodings="utf-8,ucs-bom,gbk,cp936,gb2312,gb18030",
     autoread=true,
     cmdheight=2,
     laststatus=2,
@@ -149,6 +154,50 @@ local basic_maps = {
 			expr = false,
 		}
 	},
+	{
+		mode = "n",
+		key = "<C-Right>",
+		cmd = ":vertical resize +10<CR>",
+		options = {
+			silent = false,
+			noremap = true,
+			nowait = false,
+			expr = false,
+		}
+	},
+	{
+		mode = "n",
+		key = "<C-Left>",
+		cmd = ":vertical resize -10<CR>",
+		options = {
+			silent = false,
+			noremap = true,
+			nowait = false,
+			expr = false,
+		}
+	},
+	-- {
+	-- 	mode = "n",
+	-- 	key = "<C-Up>",
+	-- 	cmd = ":resize -10<CR>",
+	-- 	options = {
+	-- 		silent = false,
+	-- 		noremap = true,
+	-- 		nowait = false,
+	-- 		expr = false,
+	-- 	}
+	-- },
+	-- {
+	-- 	mode = "n",
+	-- 	key = "<C-Down>",
+	-- 	cmd = ":resize +10<CR>",
+	-- 	options = {
+	-- 		silent = false,
+	-- 		noremap = true,
+	-- 		nowait = false,
+	-- 		expr = false,
+	-- 	}
+	-- },
 }
 
 utils:bind_keymaps(basic_maps)

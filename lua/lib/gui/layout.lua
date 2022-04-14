@@ -105,7 +105,7 @@ PLoop(function(_ENV)
         function Count(self)
         end
 
-        function Geometry(self, )
+        function Geometry(self )
             return self.geometry
         end
 

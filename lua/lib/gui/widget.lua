@@ -1,42 +1,43 @@
 require('PLoop')
 require('lib.functions')
 require('lib.gui.gobject')
+-- require('lib.gui.layout')
 --
 PLoop(function(_ENV)
     namespace "gui"
 
-    class "WidgetItem" (function(_ENV)
-        inherit "LayoutItem"
+--     class "WidgetItem" (function(_ENV)
+--         inherit "LayoutItem"
 
-        function WidgetItem(self, widget)
-            assert(Class.IsSubType(widget, 'Widget'), 'invalid widget')
-            self.widget = widget
-        end
-        function SizeHint(self)
-            assert(false, 'pure virtual method called')
-        end
+--         function WidgetItem(self, widget)
+--             assert(Class.IsSubType(widget, 'Widget'), 'invalid widget')
+--             self.widget = widget
+--         end
+--         function SizeHint(self)
+--             assert(false, 'pure virtual method called')
+--         end
 
-        function MinimumSize(self)
-            assert(false, 'pure virtual method called')
-        end
+--         function MinimumSize(self)
+--             assert(false, 'pure virtual method called')
+--         end
 
-        function MaximumSize(self)
-            assert(false, 'pure virtual method called')
-        end
-        function Geometry(self)
-            assert(false, 'pure virtual method called')
-        end
-        function SetGeometry(self)
-            assert(false, 'pure virtual method called')
-        end
-        function Widget(self)
-            return self.widget
-        end
+--         function MaximumSize(self)
+--             assert(false, 'pure virtual method called')
+--         end
+--         function Geometry(self)
+--             assert(false, 'pure virtual method called')
+--         end
+--         function SetGeometry(self)
+--             assert(false, 'pure virtual method called')
+--         end
+--         function Widget(self)
+--             return self.widget
+--         end
 
-        function IsEmpty(self)
-            return not self.widget or self.widget:IsHidden() 
-        end
-    end)
+--         function IsEmpty(self)
+--             return not self.widget or self.widget:IsHidden() 
+--         end
+--     end)
 
     class "Widget" (function(_ENV)
         inherit "GObject"
