@@ -58,13 +58,13 @@ local plugins = {
         config = require('plugins.config.telescope_fzf_native').init
     },
     -- file explorer
-    nvim_tree = {
-        'nvim-tree.lua',
-        opt = true,
-        cmd = 'NvimTreeToggle',
-        requires = 'nvim-web-devicons',
-        config = require('plugins.config.nvim_tree').init
-    },
+    -- nvim_tree = {
+    --     'nvim-tree.lua',
+    --     opt = true,
+    --     cmd = 'NvimTreeToggle',
+    --     requires = 'nvim-web-devicons',
+    --     config = require('plugins.config.nvim_tree').init
+    -- },
     -- symbols explorer
     symbols_outline = {
         'symbols-outline.nvim',

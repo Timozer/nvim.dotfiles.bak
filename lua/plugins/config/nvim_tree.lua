@@ -60,43 +60,6 @@ function config.init()
             height = 30,
             side = 'left',
             auto_resize = false,
-            mappings = {
-                custom_only = true,
-                list = {
-                    { key = "i",    cb = tree_cb("cd") },
-                    { key = "o",                            cb = tree_cb("dir_up") },
-
-                    { key = "<CR>", cb = tree_cb("edit") },
-                    { key = "<C-]>",                        cb = tree_cb("vsplit") },
-                    { key = "<C-s>",                        cb = tree_cb("split") },
-
-                    { key = "<BS>",                         cb = tree_cb("close_node") },
-                    { key = "h",                            cb = tree_cb("parent_node") },
-                    { key = "K",                            cb = tree_cb("first_sibling") },
-                    { key = "J",                            cb = tree_cb("last_sibling") },
-
-                    { key = "H",                            cb = tree_cb("toggle_dotfiles") },
-                    { key = "R",                            cb = tree_cb("refresh") },
-                    -- { key = "<",                            cb = tree_cb("prev_sibling") },
-                    -- { key = ">",                            cb = tree_cb("next_sibling") },
-
-                    { key = "a",                            cb = tree_cb("create") },
-                    { key = "<Del>",                            cb = tree_cb("remove") },
-                    { key = "r",                            cb = tree_cb("rename") },
-                    { key = "<C-r>",                        cb = tree_cb("full_rename") },
-
-                    { key = "<C-x>",                            cb = tree_cb("cut") },
-                    { key = "<C-c>",                            cb = tree_cb("copy") },
-                    { key = "<C-v>",                            cb = tree_cb("paste") },
-
-                    { key = "y",                            cb = tree_cb("copy_name") },
-                    { key = "Y",                            cb = tree_cb("copy_path") },
-                    { key = "gy",                           cb = tree_cb("copy_absolute_path") },
-
-                    { key = "q",                            cb = tree_cb("close") },
-                    { key = "<C-_>",                           cb = tree_cb("toggle_help") },
-                }
-            }
         }
     }
 end
