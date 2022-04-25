@@ -29,53 +29,7 @@ local WIN_OPTIONS = {
     cursorlineopt = "line",
     colorcolumn = "0",
     wrap = false,
-    winhl = table.concat({
-        "EndOfBuffer:TTreeEndOfBuffer",
-        "Normal:TTreeNormal",
-        "CursorLine:TTreeCursorLine",
-        "VertSplit:TTreeVertSplit",
-        "StatusLine:TTreeStatusLine",
-        "StatusLineNC:TTreeStatuslineNC",
-        "SignColumn:TTreeSignColumn",
-        "NormalNC:TTreeNormalNC",
-    }, ","),
 }
-
-local function SetBufOpts(bufnr, opts)
-    if not buf or not vim.api.nvim_buf_is_valid(buf) then
-        return
-    end
-    for key, val in pairs(opts) do
-        vim.api.nvim_buf_set_option(buf, key, val)
-    end
-end
-
-local function SetBufKeybindings(bufnr, keybindings)
-    return
-end
-
-local function CreateBuffer(name, opts, keybindings)
-    local bufnr = vim.api.nvim_create_buf(false, false)
-    assert(bufnr, 'failed to create buffer')
-
-    if name then
-        vim.api.nvim_buf_set_name(bufnr, "TTree_")
-    end
-
-    SetBufOpts(bufnr, opts or {})
-    SetBufKeybindings(bufnr, keybindings or {})
-
-    return bufnr
-end
-
-local function SetWinOpts(winnr, opts)
-    if not winnr or not vim.api.nvim_win_is_valid(winnr) then
-        return
-    end
-    for key, val in pairs(opts) do
-        vim.api.nvim_win_set_option(winnr, key, val)
-    end
-end
 
 local function CreateWindow(bufnr)
     vim.api.nvim_command("vsp")
