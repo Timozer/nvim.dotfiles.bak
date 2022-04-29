@@ -1,17 +1,25 @@
 
 local M = {}
+M.__index = M
 
 function M.New(opts)
     local win = setmetatable(opts or {}, M)
     vim.api.nvim_command("vsp")
     vim.api.nvim_command("wincmd H")
-    local winnr = vim.api.nvim_get_current_win()
-    vim.api.nvim_win_set_buf(winnr, bufnr)
+    win.winnr = vim.api.nvim_get_current_win()
+
+    if win.bufnr then
+        vim.api.nvim_win_set_buf(win.winnr, win.bufnr)
+    end
 
     if win.width and win.width > 0 then
-        vim.api.nvim_win_set_width(winnr, 20)
+        vim.api.nvim_win_set_width(win.winnr, win.width)
     end
-    return winnr
+
+    if win.opts then
+        win.SetOpts(win.opts)
+    end
+    return win
 end
 
 function M:SetOpts(opts)

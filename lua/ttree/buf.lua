@@ -1,5 +1,6 @@
 
 local M = {}
+M.__index = M
 
 function M.New(opts)
 
@@ -10,10 +11,15 @@ function M.New(opts)
         vim.api.nvim_buf_set_name(buf.bufnr, buf.name)
     end
 
-    SetBufOpts(bufnr, opts or {})
-    SetBufKeybindings(bufnr, keybindings or {})
+    if buf.opts then
+        buf.SetOpts(buf.opts)
+    end
 
-    return bufnr
+    if buf.keymaps then
+        buf.SetKeymaps(buf.keymaps)
+    end
+
+    return buf
 end
 
 function M:SetOpts(opts)
@@ -40,9 +46,9 @@ function M:SetKeymaps(maps)
     if not self.bufnr or not vim.api.nvim_buf_is_valid(self.bufnr) then
         return
     end
-    opts = opts or {}
+    maps = maps or {}
 
-    for _, val in ipairs(opts) do
+    for _, val in ipairs(maps) do
         vim.api.nvim_buf_set_keymap(self.bufnr, val.mode, val.lhs, val.rhs, val.opts)
     end
 end

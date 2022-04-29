@@ -29,6 +29,8 @@ function M.Draw(view, tree)
         log.error("Error: %s\n", vim.inspect(err))
         return
     end
+    log.debug("tree: %s\n", vim.inspect(tree))
+    log.debug("lines: %s\n", vim.inspect(M.lines))
 
     view.Update(M.lines, M.highlights)
 end
@@ -42,7 +44,7 @@ function M.GetNodeIcon(node)
         icon = node.status == "closed" and "" or ""
         hl = node.status == "closed" and "TTreeFolderClosed" or "TTreeFolderOpened"
     elseif node.ftype == "link" then
-        icon = node.link_type == "folder" and "" or "➜"
+        icon = node.link_type == "folder" and "" or ""
         hl = node.link_type == "folder" and "TTreeSymlinkFolder" or "TTreeSymlinkFile"
     end
     return icon, hl

@@ -5,43 +5,6 @@ local M = {
     highlight_namespace = vim.api.nvim_create_namespace("TTreeHighlights"),
 }
 
-local BUFFER_OPTIONS = {
-  swapfile = false,
-  buftype = "nofile",
-  modifiable = false,
-  filetype = "TTree",
-  bufhidden = "wipe",
-  buflisted = false,
-}
-
-local WIN_OPTIONS = {
-    relativenumber = false,
-    number = false,
-    list = false,
-    foldenable = false,
-    winfixwidth = true,
-    winfixheight = true,
-    spell = false,
-    signcolumn = "yes",
-    foldmethod = "manual",
-    foldcolumn = "0",
-    cursorcolumn = false,
-    cursorlineopt = "line",
-    colorcolumn = "0",
-    wrap = false,
-}
-
-local function CreateWindow(bufnr)
-    vim.api.nvim_command("vsp")
-    vim.api.nvim_command("wincmd H")
-    local winnr = vim.api.nvim_get_current_win()
-    vim.api.nvim_win_set_buf(winnr, bufnr)
-
-    SetWinOpts(winnr, WIN_OPTIONS)
-    vim.api.nvim_win_set_width(winnr, 20)
-    return winnr
-end
-
 function M.Open()
     if M.Visable() then
         return
@@ -55,11 +18,44 @@ function M.Open()
     end
 
     if not M.tabs[tabpage].bufnr or not vim.api.nvim_buf_is_valid(M.tabs[tabpage].bufnr) then
-        M.tabs[tabpage].bufnr = CreateBuffer("TTree_" .. tabpage, BUFFER_OPTIONS)
+        local buf = require("ttree.buf").New({
+                name = "TTree_" .. tabpage,
+                opts = {
+                    swapfile   = false,
+                    buftype    = "nofile",
+                    modifiable = false,
+                    filetype   = "TTree",
+                    bufhidden  = "wipe",
+                    buflisted  = false,
+                },
+                keymaps = {
+                }
+            })
+        M.tabs[tabpage].bufnr = buf.bufnr
     end
 
     if not M.tabs[tabpage].winnr or not vim.api.nvim_win_is_valid(M.tabs[tabpage].winnr) then
-        M.tabs[tabpage].winnr = CreateWindow(M.tabs[tabpage].bufnr)
+        local window = require("ttree.win").New({
+            bufnr = M.tabs[tabpage].bufnr,
+            width = 20,
+            opts = {
+                relativenumber = false,
+                number         = false,
+                list           = false,
+                foldenable     = false,
+                winfixwidth    = true,
+                winfixheight   = true,
+                spell          = false,
+                signcolumn     = "yes",
+                foldmethod     = "manual",
+                foldcolumn     = "0",
+                cursorcolumn   = false,
+                cursorlineopt  = "line",
+                colorcolumn    = "0",
+                wrap           = false,
+            }
+        })
+        M.tabs[tabpage].winnr = window.winnr
     end
 
 end

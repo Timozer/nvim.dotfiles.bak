@@ -4,13 +4,6 @@ if 1 ~= vim.fn.has "nvim-0.5.1" then
   return
 end
 
-require('PLoop')
-require('lib.gui.tools')
-require('lib.gui.common')
-require('lib.gui.gobject')
-require('lib.gui.widget')
-require('lib.gui.border')
-
 local ctrlp = {
     extensions = {}
 }
@@ -42,25 +35,25 @@ function ctrlp.load_command(start_line, end_line, count, cmd, ...)
         print(arg)
     end
 
-    PLoop(function(_ENV)
-        import "gui"
+--     PLoop(function(_ENV)
+--         import "gui"
 
-        local opts = {
-            relative = GObject.Relative.Editor,
-            geometry = { '0.5', '0.5', '0.8', '0.8' },
-            bufopts = {
-                buflisted = false,
-                modifiable = false,
-                readonly = true,
-            },
-            winopts = {
-            },
-            enter = true,
-            border = Border.Style.Rounded,
-        }
-        win = Widget(opts, nil)
-        win:Show()
-    end)
+--         local opts = {
+--             relative = GObject.Relative.Editor,
+--             geometry = { '0.5', '0.5', '0.8', '0.8' },
+--             bufopts = {
+--                 buflisted = false,
+--                 modifiable = false,
+--                 readonly = true,
+--             },
+--             winopts = {
+--             },
+--             enter = true,
+--             border = Border.Style.Rounded,
+--         }
+--         win = Widget(opts, nil)
+--         win:Show()
+--     end)
 
 end
 

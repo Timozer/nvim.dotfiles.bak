@@ -2,6 +2,7 @@
 local M = {}
 
 function M.setup(opts)
+    opts = opts or {}
     opts.log = {
         level = "debug",
         path = "ttree.log"
@@ -12,8 +13,6 @@ function M.setup(opts)
     require("ttree.log").setup(opts.log)
 
     local log = require("ttree.log")
-    log.info("%s\n", "hello ttree")
-
     local node = require("ttree.node")
     local tree = node.New()
     local view = require("ttree.view")
