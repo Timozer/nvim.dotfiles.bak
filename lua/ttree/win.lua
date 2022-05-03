@@ -17,7 +17,7 @@ function M.New(opts)
     end
 
     if win.opts then
-        win.SetOpts(win.opts)
+        win:SetOpts(win.opts)
     end
     return win
 end

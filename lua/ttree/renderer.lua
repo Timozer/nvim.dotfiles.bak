@@ -3,36 +3,67 @@ local log = require("ttree.log")
 local utils = require("ttree.utils")
 local icons = require("ttree.icons")
 
-local M = {
-    lines = {},
-    highlights = {},
-    curlineno = 0,
+lines = {
+    {
+        line = "xxx",
+        node = node,
+        highlights = {}
+    }
 }
 
-function M.Draw(view, tree)
-    if not tree or not view or not view.Visable() then
-        return
+local M = {
+    lines      = {},
+    view       = nil,
+    tree       = nil,
+    gitstatus  = nil,
+}
+
+function M._RefreshGitStatus()
+    M.gitstatus = nil
+    local ret = require("ttree.git").Status(M.tree.abs_path)
+    if ret.result == "success" then
+        M.gitstatus = ret.data
     end
+end
 
-    M.lines = {}
-    M.highlights = {}
-    M.curlineno = 0
-
-    local gitstatus = require("ttree.git").Status(tree.abs_path)
-    if gitstatus.result == "success" then
-        M.gitstatus = gitstatus.data
-    end
-
-    err = M.GetTreeContext(tree, 0)
+function M._RefreshLines()
+    err = M.GetTreeContext(M.tree, 0)
     if err then
         -- TODO:
         log.error("Error: %s\n", vim.inspect(err))
         return
     end
-    log.debug("tree: %s\n", vim.inspect(tree))
     log.debug("lines: %s\n", vim.inspect(M.lines))
 
-    view.Update(M.lines, M.highlights)
+end
+
+function M.GetRenderContext()
+    local lines = {}
+    local highlights = {}
+    for i, item in ipairs(M.lines) do
+        table.insert(lines, item.line)
+        for _, highlight in pairs(item.highlights) do
+            highlight[2] = i
+            table.insert(highlights, highlight)
+        end
+    end
+    log.debug("lines: %s\n", vim.inspect(lines))
+    log.debug("highlights: %s\n", vim.inspect(highlights))
+    return lines, highlights
+end
+
+function M.Draw()
+    if not M.tree or not M.view or not M.view.Visable() then
+        return
+    end
+
+    M.lines = {}
+    M.highlights = {}
+
+    M._RefreshGitStatus()
+    M._RefreshLines()
+
+    M.view.Update(M.GetRenderContext())
 end
 
 function M.GetNodeIcon(node)
@@ -76,21 +107,17 @@ function M.GetTreeContext(tree, depth)
     log.debug("abs_path: %s ftype: %s\n", tree.abs_path, tree.ftype)
 
     local indent = string.rep(" ", depth * 2)
-    if depth > 0 then
-        table.insert(M.highlights, {"TTreeIndentMarker", M.curlineno, 0, string.len(indent)})
-    end
 
     local icon, icon_hl = M.GetNodeIcon(tree)
     icon = #icon > 0 and icon .. " " or ""
 
-    local name = tree.name
-
     local gitstatus, gitstatus_hl = M.GetGitIcon(tree)
     gitstatus = #gitstatus > 0 and " " .. gitstatus or ""
 
+    local name = tree.name
     local name_hl = gitstatus_hl
 
-    if M.curlineno == 0 then
+    if M.tree == tree then
         icon = ""
         icon_hl = ""
         name = utils.path_join {
@@ -100,18 +127,19 @@ function M.GetTreeContext(tree, depth)
         name_hl = "TTreeRootFolder"
         gitstatus = ""
         gitstatus_hl = ""
-    elseif tree.ftype == "file" then
-    elseif tree.ftype == "folder" then
-    elseif tree.ftype == "link" then
     end
 
-    local line = string.format("%s%s%s%s", indent, icon, name, gitstatus)
-    table.insert(M.lines, line)
-    table.insert(M.highlights, {icon_hl, M.curlineno, #indent, #indent + #icon})
-    table.insert(M.highlights, {name_hl, M.curlineno, #indent + #icon, #indent + #icon + #name})
-    table.insert(M.highlights, {gitstatus_hl, M.curlineno, #indent + #icon + #name, #indent + #icon + #name + #gitstatus})
+    local new_line = {
+        line = string.format("%s%s%s%s", indent, icon, name, gitstatus),
+        node = tree,
+        highlights = {
+            {icon_hl, -1, #indent, #indent + #icon},
+            {name_hl, -1, #indent + #icon, #indent + #icon + #name},
+            {gitstatus_hl, -1, #indent + #icon + #name, #indent + #icon + #name + #gitstatus},
+        }
+    }
+    table.insert(M.lines, new_line)
 
-    M.curlineno = M.curlineno + 1
     if tree.ftype == "folder" and tree.status == "opened" then
         for _, node in ipairs(tree.nodes) do
             M.GetTreeContext(node, depth + 1)
@@ -121,10 +149,20 @@ function M.GetTreeContext(tree, depth)
     return nil
 end
 
+function M.GetFocusedNode()
+    local cursor = M.view.GetCursor()
+    return M.lines[cursor[1]]["node"]
+end
+
 function M.ShowTree(view, tree)
 end
 
 function M.ShowHelp(view)
+end
+
+function M.setup(opts)
+    M.view = opts and opts.view
+    M.tree = opts and opts.tree
 end
 
 return M

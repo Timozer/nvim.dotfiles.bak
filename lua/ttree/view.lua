@@ -5,7 +5,7 @@ local M = {
     highlight_namespace = vim.api.nvim_create_namespace("TTreeHighlights"),
 }
 
-function M.Open()
+function M.Open(opts)
     if M.Visable() then
         return
     end
@@ -28,8 +28,7 @@ function M.Open()
                     bufhidden  = "wipe",
                     buflisted  = false,
                 },
-                keymaps = {
-                }
+                keymaps = opts.keymaps
             })
         M.tabs[tabpage].bufnr = buf.bufnr
     end
@@ -79,6 +78,14 @@ function M.Update(lines, highlights)
         vim.api.nvim_buf_add_highlight(bufnr, M.highlight_namespace, data[1], data[2], data[3], data[4])
     end
     vim.api.nvim_buf_set_option(bufnr, "modifiable", false)
+end
+
+function M.GetCursor()
+    local tabpage = vim.api.nvim_get_current_tabpage()
+    return M.tabs[tabpage] and
+        M.tabs[tabpage].winnr ~= nil and
+        vim.api.nvim_win_is_valid(M.tabs[tabpage].winnr) and
+        vim.api.nvim_win_get_cursor(M.tabs[tabpage].winnr)
 end
 
 return M
