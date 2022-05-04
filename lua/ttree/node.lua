@@ -89,4 +89,19 @@ function M:Load()
     end
 end
 
+function M:Expand()
+    if self.ftype ~= "folder" and not (self.ftype == "link" and self.link_type == "folder") then
+        return
+    end
+    self.status = "opened"
+    self:Load()
+end
+
+function M:Collapse()
+    if self.ftype ~= "folder" and not (self.ftype == "link" and self.link_type == "folder") then
+        return
+    end
+    self.status = "closed"
+end
+
 return M

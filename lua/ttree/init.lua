@@ -61,23 +61,55 @@ function M.setup(opts)
     local node = require("ttree.node")
     local tree = node.New()
     local view = require("ttree.view")
-    view.Open({
-        keymaps = {
-            {
-                mode = 'n',
-                lhs = '<CR>',
-                rhs = '',
-                opts = { 
-                    callback = require('ttree.actions').CR,
-                    desc = 'CR Action' 
-                }
-            }
-        }
-    })
+    view.Open()
+
     local renderer = require("ttree.renderer")
+    local actions = require('ttree.actions')
     renderer.setup({
         view = view,
         tree = tree,
+        keymaps = {
+            ["tree"] = {
+                {
+                    mode = 'n',
+                    lhs = '<CR>',
+                    rhs = '',
+                    opts = { 
+                        callback = renderer.DoAction(actions.CR),
+                        desc = 'CR Action' 
+                    }
+                },
+                {
+                    mode = 'n',
+                    lhs = 'o',
+                    rhs = '',
+                    opts = { 
+                        callback = renderer.DoAction(actions.EditFile),
+                        desc = 'Edit File' 
+                    }
+                },
+                {
+                    mode = 'n',
+                    lhs = '<C-]>',
+                    rhs = '',
+                    opts = { 
+                        callback = renderer.DoAction(actions.VSplitFile),
+                        desc = 'VSplit File' 
+                    }
+                },
+                {
+                    mode = 'n',
+                    lhs = '<C-s>',
+                    rhs = '',
+                    opts = { 
+                        callback = renderer.DoAction(actions.SplitFile),
+                        desc = 'Split File' 
+                    }
+                }
+            },
+            ["help"] = {
+            }
+        }
     })
     renderer.Draw()
 end

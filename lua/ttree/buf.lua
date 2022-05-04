@@ -1,4 +1,6 @@
-local M = {}
+local M = {
+    old_keymaps = {}
+}
 M.__index = M
 
 function M.New(opts)
@@ -50,15 +52,28 @@ local maps = {
 --         desc = 'CR Action' 
 --     }
 -- }
+--
+function M:ClearKeymaps()
+    if not self.bufnr or not vim.api.nvim_buf_is_valid(self.bufnr) then
+        return
+    end
+end
 
 function M:SetKeymaps(maps)
     if not self.bufnr or not vim.api.nvim_buf_is_valid(self.bufnr) then
         return
     end
     maps = maps or {}
+
+    for _, val in ipairs(self.old_keymaps) do
+        vim.api.nvim_buf_del_keymap(self.bufnr, val.mode, val.lhs)
+    end
+
     for _, val in ipairs(maps) do
         vim.api.nvim_buf_set_keymap(self.bufnr, val.mode, val.lhs, val.rhs, val.opts)
     end
+
+    self.old_keymaps = maps
 end
 
 function M.GetByFileName(fname)

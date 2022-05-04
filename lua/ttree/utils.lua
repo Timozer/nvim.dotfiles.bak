@@ -7,6 +7,27 @@ local M = {}
 
 M.is_windows = vim.fn.has "win32" == 1 or vim.fn.has "win32unix" == 1
 
+function M.Notify(msg)
+    vim.schedule(function()
+        vim.notify(msg)
+    end)
+end
+
+function M.GetInput(prompt)
+    vim.api.nvim_command("redraw")
+    print(prompt)
+    local _, resp = pcall(vim.fn.getcharstr)
+    resp = resp or ""
+    vim.api.nvim_command("normal! :")
+    return resp
+end
+
+function M.Input(opts, callback)
+    vim.api.nvim_command("redraw")
+    vim.ui.input(opts, callback)
+    vim.api.nvim_command("normal! :")
+end
+
 function M.path_to_matching_str(path)
     return path:gsub("(%-)", "(%%-)"):gsub("(%.)", "(%%.)"):gsub("(%_)", "(%%_)")
 end
@@ -94,33 +115,6 @@ function M.get_user_input_char()
         c = vim.fn.getchar()
     end
     return vim.fn.nr2char(c)
-end
-
--- get the node from the tree that matches the predicate
--- @param nodes list of node
--- @param fn    function(node): boolean
-function M.find_node(nodes, fn)
-    local function iter(nodes_, fn_)
-        local i = 1
-        for _, node in ipairs(nodes_) do
-            if fn_(node) then
-                return node, i
-            end
-            if node.open and #node.nodes > 0 then
-                local n, idx = iter(node.nodes, fn_)
-                i = i + idx
-                if n then
-                    return n, i
-                end
-            else
-                i = i + 1
-            end
-        end
-        return nil, i
-    end
-    local node, i = iter(nodes, fn)
-    i = require("ftree.view").View.hide_root_folder and i - 1 or i
-    return node, i
 end
 
 ---Matching executable files in Windows.

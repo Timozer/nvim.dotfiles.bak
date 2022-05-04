@@ -63,7 +63,8 @@ function M.Draw()
     M._RefreshGitStatus()
     M._RefreshLines()
 
-    M.view.Update(M.GetRenderContext())
+    local lines, highlights = M.GetRenderContext()
+    M.view.Update(lines, highlights, M.keymaps['tree'])
 end
 
 function M.GetNodeIcon(node)
@@ -154,6 +155,16 @@ function M.GetFocusedNode()
     return M.lines[cursor[1]]["node"]
 end
 
+function M.DoAction(action)
+    return function()
+        local node = M.GetFocusedNode()
+        local refresh = action(node)
+        if refresh ~= nil and refresh == true then
+            M.Draw()
+        end
+    end
+end
+
 function M.ShowTree(view, tree)
 end
 
@@ -163,6 +174,7 @@ end
 function M.setup(opts)
     M.view = opts and opts.view
     M.tree = opts and opts.tree
+    M.keymaps = opts and opts.keymaps
 end
 
 return M
