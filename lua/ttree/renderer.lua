@@ -43,7 +43,7 @@ function M.GetRenderContext()
     for i, item in ipairs(M.lines) do
         table.insert(lines, item.line)
         for _, highlight in pairs(item.highlights) do
-            highlight[2] = i
+            highlight[2] = i - 1
             table.insert(highlights, highlight)
         end
     end
@@ -158,11 +158,24 @@ end
 function M.DoAction(action)
     return function()
         local node = M.GetFocusedNode()
-        local refresh = action(node)
+        local refresh = action(node, M)
         if refresh ~= nil and refresh == true then
             M.Draw()
         end
     end
+end
+
+function M.Toggle()
+    if not M.view.Visable() then
+        M.view.Open()
+        M.Draw()
+    else
+        M.view.Close()
+    end
+end
+
+function M.Focus()
+    vim.api.nvim_set_current_win(M.view.GetWinnr())
 end
 
 function M.ShowTree(view, tree)

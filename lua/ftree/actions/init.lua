@@ -45,13 +45,6 @@ function M.setup(opts)
 
     -- local options = vim.tbl_deep_extend("force", DEFAULT_MAPPING_CONFIG, user_map_config)
     M.keybindings = opts.keybindings or {
-        { key = "i", action = "require('ftree.actions.dir').dir_in" },
-        { key = "o", action = "require('ftree.actions.dir').dir_out" },
-
-        { key = "<CR>", action = "require('ftree.actions.cr')" },
-        { key = "<C-]>", action = "require('ftree.actions.file').vsplit" },
-        { key = "<C-s>", action = "require('ftree.actions.file').split" },
-        { key = "<C-p>", action = "require('ftree.actions.file').preview" },
         { key = "a", action = "require('ftree.actions.file').create" },
 
         { key = "<", action = "require('ftree.actions.movements').sibling(-1)" },
@@ -79,9 +72,7 @@ function M.setup(opts)
         { key = "[c", action = "require('ftree.actions.movements').find_git_item 'prev'" },
         { key = "]c", action = "require('ftree.actions.movements').find_git_item 'next'" },
         { key = "s", action = "require('ftree.actions.system-open').fn" },
-        { key = "q", action = "require('ftree.actions.close').do_action" },
         { key = "<C-_>", action = "require('ftree.actions.toggles').help" },
-        { key = "W", action = "require('ftree.actions.collapse-all').fn" },
         { key = "S", action = "require('ftree.actions.search-node').fn" },
         { key = ".", action = "require('ftree.actions.run-command').run_file_command" },
         { key = "<C-k>", action = "require('ftree.actions.file-popup').toggle_file_info" },

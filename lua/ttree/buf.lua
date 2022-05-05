@@ -53,12 +53,6 @@ local maps = {
 --     }
 -- }
 --
-function M:ClearKeymaps()
-    if not self.bufnr or not vim.api.nvim_buf_is_valid(self.bufnr) then
-        return
-    end
-end
-
 function M:SetKeymaps(maps)
     if not self.bufnr or not vim.api.nvim_buf_is_valid(self.bufnr) then
         return

@@ -7,20 +7,33 @@ local M = {
 }
 M.__index = M
 
+function M:GetNode(abs_path)
+    for _, node in ipairs(self.nodes) do
+        if node.abs_path == abs_path then
+            return node
+        end
+    end
+    return nil
+end
+
+function M:AddNode(opts)
+    opts.parent = self
+    table.insert(self.nodes, M.New(opts, false))
+end
+
 function M:AddFolder(opts)
     opts.ftype = "folder"
-    opts.group_next = nil
     opts.nodes = {}
     opts.status = "closed"
     log.debug("FTree AddFolder: %s\n", vim.inspect(opts))
-    table.insert(self.nodes, M.New(opts, false))
+    self:AddNode(opts)
 end
 
 function M:AddFile(opts)
     opts.ftype = "file"
     opts.ext = string.match(opts.name, ".?[^.]+%.(.*)") or ""
     log.debug("FTree AddFile: %s\n", vim.inspect(opts))
-    table.insert(self.nodes, M.New(opts, false))
+    self:AddNode(opts)
 end
 
 function M:AddLink(opts)
@@ -37,6 +50,7 @@ function M:AddLink(opts)
             opts.ext = string.match(opts.name, ".?[^.]+%.(.*)") or ""
         end
     end
+    self:AddNode(opts)
 end
 
 function M:Executable()
@@ -50,12 +64,10 @@ function M:FsStat()
     return vim.loop.fs_stat(self.abs_path)
 end
 
-function M:GitStatus()
-end
-
 function M.New(opts, load)
     log.debug("FTree New Node: %s, Load: %s\n", vim.inspect(opts), load)
     local node = setmetatable(opts or {abs_path = vim.loop.fs_realpath(vim.loop.cwd()), ftype = "folder", nodes = {}, status="opened"}, M)
+    node.name = node.name or vim.fn.fnamemodify(node.abs_path, ":t")
     if load == nil or load == true then
         node:Load()
     end
@@ -75,16 +87,18 @@ function M:Load()
         end
 
         local path = utils.path_join({self.abs_path, name})
-        t = t or (vim.loop.fs_stat(path) or {}).type
-        log.debug("FTree Next, ABS_PATH: %s, Type: %s\n", path, t)
-        if t == "directory" and vim.loop.fs_access(path, "R") then
-            self:AddFolder({ abs_path = path, name = name })
-        elseif t == "file" then
-            self:AddFile({ abs_path = path, name = name })
-        elseif t == "link" then
-            self:AddLink({ abs_path = path, name = name })
-        else
-            log.warn("Unkown type: %s\n", t)
+        if self:GetNode(path) == nil then
+            t = t or (vim.loop.fs_stat(path) or {}).type
+            log.debug("FTree Next, ABS_PATH: %s, Type: %s\n", path, t)
+            if t == "directory" and vim.loop.fs_access(path, "R") then
+                self:AddFolder({ abs_path = path, name = name })
+            elseif t == "file" then
+                self:AddFile({ abs_path = path, name = name })
+            elseif t == "link" then
+                self:AddLink({ abs_path = path, name = name })
+            else
+                log.warn("Unkown type: %s\n", t)
+            end
         end
     end
 end

@@ -28,7 +28,7 @@ function M.Open(opts)
                     buftype    = "nofile",
                     modifiable = false,
                     filetype   = "TTree",
-                    bufhidden  = "wipe",
+                    bufhidden  = "hide",
                     buflisted  = false,
                 },
             })
@@ -57,8 +57,19 @@ function M.Open(opts)
         })
         M.tabs[tabpage].winnr = window.winnr
         M.tabs[tabpage].win = window
+        M.RestoreState()
     end
 
+end
+
+function M.GetWinnr()
+    if M.tabs then
+        local tabpage = vim.api.nvim_get_current_tabpage()
+        if M.tabs[tabpage] and M.tabs[tabpage].win then
+            return M.tabs[tabpage].win.winnr
+        end
+    end
+    return nil
 end
 
 function M.Visable()
@@ -91,6 +102,24 @@ function M.GetCursor()
         M.tabs[tabpage].winnr ~= nil and
         vim.api.nvim_win_is_valid(M.tabs[tabpage].winnr) and
         vim.api.nvim_win_get_cursor(M.tabs[tabpage].winnr)
+end
+
+function M.SaveState()
+    local tabpage = vim.api.nvim_get_current_tabpage()
+    M.tabs[tabpage].cursor = M.GetCursor()
+end
+
+function M.RestoreState()
+    local tabpage = vim.api.nvim_get_current_tabpage()
+    if M.tabs[tabpage].cursor then
+        vim.api.nvim_win_set_cursor(M.tabs[tabpage].win.winnr, M.tabs[tabpage].cursor)
+    end
+end
+
+function M.Close()
+    M.SaveState()
+    local tabpage = vim.api.nvim_get_current_tabpage()
+    vim.api.nvim_win_close(M.tabs[tabpage].win.winnr, true)
 end
 
 return M

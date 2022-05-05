@@ -1,4 +1,5 @@
 local utils = require('ttree.utils')
+local job = require('ttree.job')
 
 local M = {}
 
@@ -52,20 +53,20 @@ function M.EditFile(node)
     vim.api.nvim_command("wincmd p")
 
     utils.Notify("[TTree] Edit File: " .. node.abs_path .. " winnr: " .. vim.inspect(winnr))
-    pcall(vim.cmd, "edit "..vim.fn.fnameescape(node.abs_path))
+    pcall(vim.cmd, "edit "..vim.fn.fnameescape(node.ftype == "link" and node.link_to or node.abs_path))
 end
 
 function M.SplitFile(node)
     vim.api.nvim_command("wincmd p")
 
     utils.Notify("[TTree] Edit File: " .. node.abs_path .. " winnr: " .. vim.inspect(winnr))
-    pcall(vim.cmd, "sp "..vim.fn.fnameescape(node.abs_path))
+    pcall(vim.cmd, "sp "..vim.fn.fnameescape(node.ftype == "link" and node.link_to or node.abs_path))
 end
 
 function M.VSplitFile(node)
     vim.api.nvim_command("wincmd p")
     utils.Notify("[TTree] Edit File: " .. node.abs_path .. " winnr: " .. vim.inspect(winnr))
-    pcall(vim.cmd, "vsp "..vim.fn.fnameescape(node.abs_path))
+    pcall(vim.cmd, "vsp "..vim.fn.fnameescape(node.ftype == "link" and node.link_to or node.abs_path))
 end
 
 function M.DirToggle(node)
@@ -82,16 +83,132 @@ function M.DirToggle(node)
     return true
 end
 
-function M.DirExpand(node)
+function M.DirIn(node, renderer)
+    if node.nodes ~= nil then
+        node:Expand()
+        renderer.tree = node
+        vim.api.nvim_command("cd " .. node.abs_path)
+        return true
+    end
+    return false
 end
 
-function M.DirCollapse(node)
+function M.DirOut(node, renderer)
+    local cur_tree = renderer.tree
+
+    if cur_tree.parent == nil then
+        local tree = require("ttree.node").New({
+                abs_path = vim.fn.fnamemodify(cur_tree.abs_path, ":h"),
+                ftype = "folder",
+                status = "opened",
+                nodes = { cur_tree }
+            })
+        cur_tree.parent = tree
+    end
+
+    renderer.tree = cur_tree.parent
+    vim.api.nvim_command("cd " .. renderer.tree.abs_path)
+    return true
 end
 
-function M.DirIn(node)
+function M.NewFile(node, renderer)
+    local tmpNode = node
+    if node.ftype == "file" or (node.ftype == "link" and node.link_type == "file") then
+        tmpNode = node.parent
+    elseif node.ftype == "folder" or (node.ftype == "link" and node.link_type == "folder") then
+        if node.status == "closed" then
+            tmpNode = node.parent
+        end
+    end
+
+    local opts = { prompt = "["..tmpNode.abs_path.."]" .. " New dir or file: " }
+
+    vim.ui.input(opts, function(fname)
+        if not fname or #fname == 0 then
+            return
+        end
+
+        vim.api.nvim_command("normal! :")
+
+        local abs_path = utils.path_join({ tmpNode.abs_path, fname })
+
+        if utils.file_exists(abs_path) then
+            utils.Notify(fname .. " already exists")
+            return
+        end
+
+        local dir = vim.fn.fnamemodify(fname, ":h")
+        local job_mkdir = job.New({
+            path = "mkdir",
+            args = { "-p", dir },
+            cwd = tmpNode.abs_path, 
+        })
+        job_mkdir:Run()
+        if job_mkdir.status ~= 0 then
+            utils.Notify("fail to create " .. fname .. ", err: " .. job_mkdir.stderr)
+            return
+        end
+
+        local filename = vim.fn.fnamemodify(fname, ":t")
+        if #filename > 0 then
+            local job_touch = job.New({
+                path = "touch",
+                args = { fname },
+                cwd = tmpNode.abs_path, 
+            })
+            job_touch:Run()
+            if job_touch.status ~= 0 then
+                utils.Notify("fail to create " .. fname .. ", err: " .. job_touch.stderr)
+                return
+            end
+        end
+
+        tmpNode:Expand()
+    end)
+    return true
 end
 
-function M.DirOut(node)
+function M.RenameFile(node)
+    local dir = vim.fn.fnamemodify(node.abs_path, ":h")
+    local opts = { 
+        prompt = "["..dir.."]" .. " Rename " .. node.name .. " to: ",
+        default = node.name,
+    }
+
+    vim.ui.input(opts, function(fname)
+        if not fname or #fname == 0 or fname == node.name then
+            return
+        end
+
+        local abs_path = utils.path_join({dir, fname})
+        if utils.file_exists(abs_path) then
+            utils.Notify(fname .. " already exists")
+            return
+        end
+
+        local job_mv = job.New({
+            path = "mv",
+            args = { node.name, fname },
+            cwd = dir, 
+        })
+        job_mv:Run()
+        if job_mv.status ~= 0 then
+            utils.Notify("fail to rename " .. fname .. ", err: " .. job_mv.stderr)
+            return
+        end
+
+        node.name = fname
+        node.abs_path = abs_path
+        if node.ftype == "folder" or (node.ftype == "link" and node.link_type == "folder") then
+            node.nodes = {}
+            if node.status == "opened" then
+                node:Expand()
+            end
+        elseif node.ftype == "file" or (node.ftype == "link" and node.link_type == "file") then
+            -- TODO rename loaded buffers
+        end
+    end)
+    return true
 end
 
 function M.setup(opts)

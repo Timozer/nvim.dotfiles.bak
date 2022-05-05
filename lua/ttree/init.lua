@@ -40,31 +40,25 @@ local M = {}
 
 local function setup_vim_commands()
   vim.cmd [[
-    command! -nargs=? -complete=dir TTreeOpen lua require'ttree'.open("<args>")
-    command! TTreeToggle lua require'ttree'.toggle(false)
-    command! TTreeFocus lua require'ttree'.focus()
+    command! TTreeToggle lua require('ttree.renderer').Toggle()
+    command! TTreeFocus lua require('ttree.renderer').Focus()
   ]]
 end
 
 function M.setup(opts)
     opts = opts or {}
-    opts.log = {
-        level = "debug",
-        path = "ttree.log"
-    }
 
     require("ttree.icons").setup(opts.icons)
     require("ttree.highlight").setup(opts.highlights)
-    require("ttree.log").setup(opts.log)
+    require("ttree.log").setup(opts.log or { level = "debug", path = "ttree.log" })
 
-    local log = require("ttree.log")
-    local node = require("ttree.node")
-    local tree = node.New()
+    setup_vim_commands()
+
+    local tree = require("ttree.node").New()
     local view = require("ttree.view")
-    view.Open()
-
     local renderer = require("ttree.renderer")
     local actions = require('ttree.actions')
+
     renderer.setup({
         view = view,
         tree = tree,
@@ -77,15 +71,6 @@ function M.setup(opts)
                     opts = { 
                         callback = renderer.DoAction(actions.CR),
                         desc = 'CR Action' 
-                    }
-                },
-                {
-                    mode = 'n',
-                    lhs = 'o',
-                    rhs = '',
-                    opts = { 
-                        callback = renderer.DoAction(actions.EditFile),
-                        desc = 'Edit File' 
                     }
                 },
                 {
@@ -105,13 +90,51 @@ function M.setup(opts)
                         callback = renderer.DoAction(actions.SplitFile),
                         desc = 'Split File' 
                     }
+                },
+                {
+                    mode = 'n',
+                    lhs = 'i',
+                    rhs = '',
+                    opts = { 
+                        callback = renderer.DoAction(actions.DirIn),
+                        desc = 'Dir In',
+                        noremap = true,
+                        silent = true,
+                        nowait = true,
+                    }
+                },
+                {
+                    mode = 'n',
+                    lhs = 'o',
+                    rhs = '',
+                    opts = { 
+                        callback = renderer.DoAction(actions.DirOut),
+                        desc = 'Dir Out' 
+                    }
+                },
+                {
+                    mode = 'n',
+                    lhs = 'a',
+                    rhs = '',
+                    opts = { 
+                        callback = renderer.DoAction(actions.NewFile),
+                        desc = 'New Dir or File' 
+                    }
+                },
+                {
+                    mode = 'n',
+                    lhs = 'r',
+                    rhs = '',
+                    opts = { 
+                        callback = renderer.DoAction(actions.RenameFile),
+                        desc = 'Rename File' 
+                    }
                 }
             },
             ["help"] = {
             }
         }
     })
-    renderer.Draw()
 end
 
 return M
