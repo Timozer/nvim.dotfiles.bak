@@ -211,6 +211,41 @@ function M.RenameFile(node)
     return true
 end
 
+function M.RemoveFile(node, renderer)
+    if node == renderer.tree then
+        utils.Notify("cannot remove root folder")
+        return
+    end
+
+    local parent = node.parent
+
+    local opts = { prompt = "Delete " .. node.abs_path .. " ?[y/n] " }
+
+    vim.ui.input(opts, function(choice)
+        if not choice or choice == "n" then
+            return
+        end
+
+        local job_rm = job.New({
+            path = "rm",
+            args = { "-r", "-f", node.abs_path },
+        })
+        job_rm:Run()
+        if job_rm.status ~= 0 then
+            utils.Notify("fail to remove " .. node.abs_path .. ", err: " .. job_rm.stderr)
+            return
+        end
+
+        parent:Load()
+    end)
+    return true
+end
+
+function M.Refresh(node, renderer)
+    renderer.tree:Load()
+    return true
+end
+
 function M.setup(opts)
 end
 

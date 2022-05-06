@@ -129,6 +129,24 @@ function M.setup(opts)
                         callback = renderer.DoAction(actions.RenameFile),
                         desc = 'Rename File' 
                     }
+                },
+                {
+                    mode = 'n',
+                    lhs = 'R',
+                    rhs = '',
+                    opts = { 
+                        callback = renderer.DoAction(actions.Refresh),
+                        desc = 'Refresh' 
+                    }
+                },
+                {
+                    mode = 'n',
+                    lhs = '<Del>',
+                    rhs = '',
+                    opts = { 
+                        callback = renderer.DoAction(actions.RemoveFile),
+                        desc = 'Remove File' 
+                    }
                 }
             },
             ["help"] = {

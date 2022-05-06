@@ -80,6 +80,7 @@ function M:Load()
         return
     end
 
+    -- 1. add node
     while true do
         local name, t = vim.loop.fs_scandir_next(handle)
         if not name then
@@ -98,6 +99,17 @@ function M:Load()
                 self:AddLink({ abs_path = path, name = name })
             else
                 log.warn("Unkown type: %s\n", t)
+            end
+        end
+    end
+
+    -- 2. check node
+    for i, node in ipairs(self.nodes) do
+        if not utils.file_exists(node.abs_path) then
+            table.remove(self.nodes, i)
+        else
+            if (node.ftype == "folder" or (node.ftype == "link" and node.link_type == "folder")) and node.status == "opened" then
+                node:Load()
             end
         end
     end
