@@ -113,6 +113,31 @@ function M:Load()
             end
         end
     end
+
+    -- 3. sort node
+    table.sort(self.nodes, M.NodeCompare)
+end
+
+function M.NodeCompare(lh, rh)
+    if lh.ftype ~= rh.ftype then
+        if lh.ftype == "folder" then
+            return true
+        elseif rh.ftype == "folder" then
+            return false
+        elseif lh.ftype == "link" and lh.link_type == "folder" then
+            return true
+        elseif rh.ftype == "link" and rh.link_type == "folder" then
+            return fasle
+        elseif lh.ftype == "file" then
+            return true
+        elseif rh.ftype == "file" then
+            return false
+        else
+            return true
+        end
+    end
+
+    return lh.name < rh.name
 end
 
 function M:Expand()

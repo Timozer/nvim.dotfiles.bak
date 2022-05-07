@@ -1,7 +1,10 @@
 local utils = require('ttree.utils')
 local job = require('ttree.job')
+local log = require('ttree.log')
 
-local M = {}
+local M = {
+    finfo_win = nil,
+}
 
 function M.TestAction(node)
     local resp = utils.GetInput("Please input a string: ")
@@ -256,6 +259,151 @@ function M.CopyAbsPath(node)
     vim.fn.setreg("+", node.abs_path)
     vim.fn.setreg('"', node.abs_path)
     utils.Notify("Copy "..node.abs_path.." to clipboard")
+end
+
+function M.Mark(node)
+end
+
+function M.MoveToParent(close)
+    return function(node, renderer)
+        if node == renderer.tree then
+            return
+        end
+
+        local parent = node.parent
+
+        for i, line in ipairs(renderer.lines) do
+            if parent ==  line.node then
+                renderer.view.SetCursor({i, 0})
+            end
+        end
+
+        if close and node ~= renderer.tree then
+            parent.status = "closed"
+            return true
+        end
+    end
+end
+
+function M.MoveToLastChild(node, renderer)
+    local cur_node = nil
+
+    if (node.ftype == "folder" or (node.ftype == "link" and node.link_type == "folder")) and node.status == "opened" then
+        cur_node = node
+    else
+        cur_node = node.parent
+    end
+
+    local last = cur_node.nodes[#cur_node.nodes]
+
+    for i, line in ipairs(renderer.lines) do
+        if last == line.node then
+            renderer.view.SetCursor({i, 0})
+        end
+    end
+end
+
+function M.MoveToNextSibling(node, renderer)
+    if node == renderer.tree then
+        return
+    end
+
+    local parent = node.parent
+    local next_node = nil
+
+    for i, _ in ipairs(parent.nodes) do
+        if parent.nodes[i] == node then
+            next_node = i == #parent.nodes and parent.nodes[1] or parent.nodes[i + 1]
+            break
+        end
+    end
+
+    for i, line in ipairs(renderer.lines) do
+        if next_node == line.node then
+            renderer.view.SetCursor({i, 0})
+        end
+    end
+end
+
+function M.MoveToPrevSibling(node, renderer)
+    if node == renderer.tree then
+        return
+    end
+
+    local parent = node.parent
+    local prev_node = nil
+
+    for i, _ in ipairs(parent.nodes) do
+        if parent.nodes[i] == node then
+            prev_node = i == 1 and parent.nodes[#parent.nodes] or parent.nodes[i - 1]
+            break
+        end
+    end
+
+    for i, line in ipairs(renderer.lines) do
+        if prev_node == line.node then
+            renderer.view.SetCursor({i, 0})
+        end
+    end
+end
+
+function M.ToggleGitIgnoredFiles(node, renderer)
+    if renderer.filter ~= nil then
+        renderer.filter = nil
+    else
+        renderer.filter = require("ttree.filter").IsGitIgnored
+    end
+    return true
+end
+
+function M.ToggleDotFiles(node, renderer)
+    if renderer.filter ~= nil then
+        renderer.filter = nil
+    else
+        renderer.filter = require("ttree.filter").IsDotFile
+    end
+    return true
+end
+
+function M.ShowFileInfo(node, renderer)
+    local fstat = node:FsStat()
+    local context = {
+        "Path: " .. node.abs_path,
+        "Size: " .. utils.format_bytes(fstat.size),
+        "CreateAt: " .. os.date("%x %X", fstat.birthtime.sec),
+        "ModifiedAt: " .. os.date("%x %X", fstat.mtime.sec),
+        "AccessedAt: " .. os.date("%x %X", fstat.atime.sec),
+    }
+
+    local win_width = vim.fn.max(vim.tbl_map(function(n) return #n end, context))
+    local winnr = vim.api.nvim_open_win(0, false, {
+        col = 1,
+        row = 1,
+        relative = "cursor",
+        width = win_width + 1,
+        height = #context,
+        border = "shadow",
+        noautocmd = true,
+        style = "minimal",
+    })
+    M.finfo_win = { winnr = winnr, node = node }
+    local bufnr = vim.api.nvim_create_buf(false, true)
+    vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, context)
+    vim.api.nvim_win_set_buf(winnr, bufnr)
+
+    vim.cmd [[
+        augroup TTreeCloseFileInfoWin
+          au CursorMoved * lua require('ttree.actions')._CloseFileInfo()
+        augroup END
+    ]]
+end
+
+function M._CloseFileInfo()
+    if M.finfo_win ~= nil then
+        vim.api.nvim_win_close(M.finfo_win.winnr, { force = true })
+        vim.cmd "augroup TTreeCloseFileInfoWin | au! CursorMoved | augroup END"
+        M.finfo_win = nil
+    end
 end
 
 function M.setup(opts)

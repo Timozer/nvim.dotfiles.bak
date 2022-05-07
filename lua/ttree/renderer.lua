@@ -15,7 +15,9 @@ local M = {
     lines      = {},
     view       = nil,
     tree       = nil,
+    lines      = nil,
     gitstatus  = nil,
+    filter     = nil,
 }
 
 function M._RefreshGitStatus()
@@ -82,6 +84,64 @@ function M.GetNodeIcon(node)
     return icon, hl
 end
 
+-- local gitIcons = {
+--     ["M "] = { { "[M]", "TTreeGitStaged" } },
+--     [" M"] = { { "[M]", "TTreeGitModified" } },
+--     ["C "] = { { icon = i.staged, hl = "NvimTreeGitStaged" } },
+--     [" C"] = { { icon = i.unstaged, hl = "NvimTreeGitDirty" } },
+--     ["CM"] = { { icon = i.unstaged, hl = "NvimTreeGitDirty" } },
+--     [" T"] = { { icon = i.unstaged, hl = "NvimTreeGitDirty" } },
+--     ["T "] = { { icon = i.staged, hl = "NvimTreeGitStaged" } },
+--     ["MM"] = {
+--         { icon = i.staged, hl = "NvimTreeGitStaged" },
+--         { icon = i.unstaged, hl = "NvimTreeGitDirty" },
+--     },
+--     ["MD"] = {
+--         { icon = i.staged, hl = "NvimTreeGitStaged" },
+--     },
+--     ["A "] = {
+--         { icon = i.staged, hl = "NvimTreeGitStaged" },
+--     },
+--     ["AD"] = {
+--         { icon = i.staged, hl = "NvimTreeGitStaged" },
+--     },
+--     [" A"] = {
+--         { icon = i.untracked, hl = "NvimTreeGitNew" },
+--     },
+--     -- not sure about this one
+--     ["AA"] = {
+--         { icon = i.unmerged, hl = "NvimTreeGitMerge" },
+--         { icon = i.untracked, hl = "NvimTreeGitNew" },
+--     },
+--     ["AU"] = {
+--         { icon = i.unmerged, hl = "NvimTreeGitMerge" },
+--         { icon = i.untracked, hl = "NvimTreeGitNew" },
+--     },
+--     ["AM"] = {
+--         { icon = i.staged, hl = "NvimTreeGitStaged" },
+--         { icon = i.unstaged, hl = "NvimTreeGitDirty" },
+--     },
+--     ["??"] = { { icon = i.untracked, hl = "NvimTreeGitNew" } },
+--     ["R "] = { { icon = i.renamed, hl = "NvimTreeGitRenamed" } },
+--     [" R"] = { { icon = i.renamed, hl = "NvimTreeGitRenamed" } },
+--     ["RM"] = {
+--         { icon = i.unstaged, hl = "NvimTreeGitDirty" },
+--         { icon = i.renamed, hl = "NvimTreeGitRenamed" },
+--     },
+--     ["UU"] = { { icon = i.unmerged, hl = "NvimTreeGitMerge" } },
+--     ["UD"] = { { icon = i.unmerged, hl = "NvimTreeGitMerge" } },
+--     ["UA"] = { { icon = i.unmerged, hl = "NvimTreeGitMerge" } },
+--     [" D"] = { { icon = i.deleted, hl = "NvimTreeGitDeleted" } },
+--     ["D "] = { { icon = i.deleted, hl = "NvimTreeGitDeleted" } },
+--     ["RD"] = { { icon = i.deleted, hl = "NvimTreeGitDeleted" } },
+--     ["DD"] = { { icon = i.deleted, hl = "NvimTreeGitDeleted" } },
+--     ["DU"] = {
+--         { icon = i.deleted, hl = "NvimTreeGitDeleted" },
+--         { icon = i.unmerged, hl = "NvimTreeGitMerge" },
+--     },
+--     ["!!"] = { { icon = i.ignored, hl = "NvimTreeGitIgnored" } },
+-- }
+
 function M.GetGitIcon(node)
     local stat = M.gitstatus and M.gitstatus[node.abs_path] or nil
     if stat == nil then
@@ -91,7 +151,7 @@ function M.GetGitIcon(node)
         return "[M]", "TTreeGitStaged"
     elseif stat == " M" then
         return "[M]", "TTreeGitModified"
-    elseif stat == "R " then
+    elseif stat == "R " or stat == " R" then
         return "[R]", "TTreeGitRenamed"
     elseif stat == " A" then
         return "[A]", "TTreeGitAdded"
@@ -106,6 +166,10 @@ end
 -- indent : icon : filename : gitstatus
 function M.GetTreeContext(tree, depth)
     log.debug("abs_path: %s ftype: %s\n", tree.abs_path, tree.ftype)
+
+    if M.filter and M.filter(tree, M.gitstatus) then
+        return
+    end
 
     local indent = string.rep(" ", depth * 2)
 

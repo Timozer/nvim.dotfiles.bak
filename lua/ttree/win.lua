@@ -2,6 +2,9 @@
 local M = {}
 M.__index = M
 
+function M.NewFloat(opts)
+end
+
 function M.New(opts)
     local win = setmetatable(opts or {}, M)
     vim.api.nvim_command("vsp")

@@ -52,6 +52,11 @@ function M.setup(opts)
     require("ttree.highlight").setup(opts.highlights)
     require("ttree.log").setup(opts.log or { level = "debug", path = "ttree.log" })
 
+    vim.cmd "silent! autocmd! FileExplorer *"
+    vim.cmd "autocmd VimEnter * ++once silent! autocmd! FileExplorer *"
+    vim.g.loaded_netrw = 1
+    vim.g.loaded_netrwPlugin = 1
+
     setup_vim_commands()
 
     local tree = require("ttree.node").New()
@@ -164,6 +169,78 @@ function M.setup(opts)
                     opts = { 
                         callback = renderer.DoAction(actions.CopyAbsPath),
                         desc = 'Copy AbsPath To Clipboard' 
+                    }
+                },
+                {
+                    mode = 'n',
+                    lhs = '<BS>',
+                    rhs = '',
+                    opts = { 
+                        callback = renderer.DoAction(actions.MoveToParent(true)),
+                        desc = 'Move To Parent Node' 
+                    }
+                },
+                {
+                    mode = 'n',
+                    lhs = '[[',
+                    rhs = '',
+                    opts = { 
+                        callback = renderer.DoAction(actions.MoveToParent(false)),
+                        desc = 'Move To Parent Node' 
+                    }
+                },
+                {
+                    mode = 'n',
+                    lhs = ']]',
+                    rhs = '',
+                    opts = { 
+                        callback = renderer.DoAction(actions.MoveToLastChild),
+                        desc = 'Move To Last Child' 
+                    }
+                },
+                {
+                    mode = 'n',
+                    lhs = 'J',
+                    rhs = '',
+                    opts = { 
+                        callback = renderer.DoAction(actions.MoveToNextSibling),
+                        desc = 'Move To Next Sibling' 
+                    }
+                },
+                {
+                    mode = 'n',
+                    lhs = 'K',
+                    rhs = '',
+                    opts = { 
+                        callback = renderer.DoAction(actions.MoveToPrevSibling),
+                        desc = 'Move To Prev Sibling' 
+                    }
+                },
+                {
+                    mode = 'n',
+                    lhs = '<C-h>',
+                    rhs = '',
+                    opts = { 
+                        callback = renderer.DoAction(actions.ToggleDotFiles),
+                        desc = 'Toggle Dot Files' 
+                    }
+                },
+                {
+                    mode = 'n',
+                    lhs = '<C-g>',
+                    rhs = '',
+                    opts = { 
+                        callback = renderer.DoAction(actions.ToggleGitIgnoredFiles),
+                        desc = 'Toggle Git Ignored Files' 
+                    }
+                },
+                {
+                    mode = 'n',
+                    lhs = '<C-k>',
+                    rhs = '',
+                    opts = { 
+                        callback = renderer.DoAction(actions.ShowFileInfo),
+                        desc = 'Show File Info' 
                     }
                 }
             },

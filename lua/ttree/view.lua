@@ -104,6 +104,14 @@ function M.GetCursor()
         vim.api.nvim_win_get_cursor(M.tabs[tabpage].winnr)
 end
 
+function M.SetCursor(cursor)
+    if not M.Visable() then
+        return
+    end
+    local tabpage = vim.api.nvim_get_current_tabpage()
+    vim.api.nvim_win_set_cursor(M.tabs[tabpage].winnr, cursor)
+end
+
 function M.SaveState()
     local tabpage = vim.api.nvim_get_current_tabpage()
     M.tabs[tabpage].cursor = M.GetCursor()
