@@ -4,6 +4,7 @@ local log = require('ttree.log')
 
 local M = {
     finfo_win = nil,
+    marks = {},
 }
 
 function M.TestAction(node)
@@ -261,7 +262,27 @@ function M.CopyAbsPath(node)
     utils.Notify("Copy "..node.abs_path.." to clipboard")
 end
 
-function M.Mark(node)
+function M.ToggleMark(node, renderer)
+    if node == renderer.tree then
+        return
+    end
+
+    local lnum = renderer.view.GetCursor()[1]
+    local signs = renderer.view.GetSign(lnum)[1]
+    log.debug("lnum: %s signs: %s\n", vim.inspect(lnum), vim.inspect(signs))
+    if #signs.signs > 0 then
+        renderer.view.ClearSign(signs.signs[1].id)
+        for i, _ in ipairs(M.marks) do
+            if M.marks[i] == node then
+                table.remove(M.marks, i)
+                break
+            end
+        end
+    else
+        renderer.view.SetSign("TTreeMark", lnum)
+        table.insert(M.marks, node)
+    end
+    log.debug("marks: %s\n", vim.inspect(M.marks))
 end
 
 function M.MoveToParent(close)
@@ -407,6 +428,7 @@ function M._CloseFileInfo()
 end
 
 function M.setup(opts)
+    vim.fn.sign_define("TTreeMark", { text = "*" })
 end
 
 return M

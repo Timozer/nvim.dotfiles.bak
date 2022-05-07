@@ -130,4 +130,33 @@ function M.Close()
     vim.api.nvim_win_close(M.tabs[tabpage].win.winnr, true)
 end
 
+function M.GetSign(lnum)
+    if not M.Visable() then
+        return
+    end
+
+    local tabpage = vim.api.nvim_get_current_tabpage()
+    return vim.fn.sign_getplaced(M.tabs[tabpage].buf.bufnr, {
+        group = "TTreeView",
+        lnum = lnum,
+    })
+end
+
+function M.SetSign(name, lnum)
+    if not M.Visable() then
+        return
+    end
+    local tabpage = vim.api.nvim_get_current_tabpage()
+    local id = vim.fn.sign_place(lnum, "TTreeView", name, M.tabs[tabpage].buf.bufnr, {lnum = lnum})
+    log.debug("set sign id: %s\n", vim.inspect(id))
+end
+
+function M.ClearSign(id)
+    if not M.Visable() then
+        return
+    end
+    local tabpage = vim.api.nvim_get_current_tabpage()
+    vim.fn.sign_unplace("TTreeView", { buffer = M.tabs[tabpage].buf.bufnr, id = id })
+end
+
 return M

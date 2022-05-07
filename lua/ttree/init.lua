@@ -51,6 +51,7 @@ function M.setup(opts)
     require("ttree.icons").setup(opts.icons)
     require("ttree.highlight").setup(opts.highlights)
     require("ttree.log").setup(opts.log or { level = "debug", path = "ttree.log" })
+    require("ttree.actions").setup(opts.actions)
 
     vim.cmd "silent! autocmd! FileExplorer *"
     vim.cmd "autocmd VimEnter * ++once silent! autocmd! FileExplorer *"
@@ -240,6 +241,15 @@ function M.setup(opts)
                     rhs = '',
                     opts = { 
                         callback = renderer.DoAction(actions.ShowFileInfo),
+                        desc = 'Show File Info' 
+                    }
+                },
+                {
+                    mode = 'n',
+                    lhs = 'm',
+                    rhs = '',
+                    opts = { 
+                        callback = renderer.DoAction(actions.ToggleMark),
                         desc = 'Show File Info' 
                     }
                 }
