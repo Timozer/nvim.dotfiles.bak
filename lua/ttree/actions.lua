@@ -246,6 +246,18 @@ function M.Refresh(node, renderer)
     return true
 end
 
+function M.CopyFileName(node)
+    vim.fn.setreg("+", node.name)
+    vim.fn.setreg('"', node.name)
+    utils.Notify("Copy "..node.name.." to clipboard")
+end
+
+function M.CopyAbsPath(node)
+    vim.fn.setreg("+", node.abs_path)
+    vim.fn.setreg('"', node.abs_path)
+    utils.Notify("Copy "..node.abs_path.." to clipboard")
+end
+
 function M.setup(opts)
 end
 

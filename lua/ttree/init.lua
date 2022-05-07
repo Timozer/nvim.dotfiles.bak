@@ -147,6 +147,24 @@ function M.setup(opts)
                         callback = renderer.DoAction(actions.RemoveFile),
                         desc = 'Remove File' 
                     }
+                },
+                {
+                    mode = 'n',
+                    lhs = 'y',
+                    rhs = '',
+                    opts = { 
+                        callback = renderer.DoAction(actions.CopyFileName),
+                        desc = 'Copy Filename To Clipboard' 
+                    }
+                },
+                {
+                    mode = 'n',
+                    lhs = 'Y',
+                    rhs = '',
+                    opts = { 
+                        callback = renderer.DoAction(actions.CopyAbsPath),
+                        desc = 'Copy AbsPath To Clipboard' 
+                    }
                 }
             },
             ["help"] = {
