@@ -35,8 +35,6 @@ function M._RefreshLines()
         log.error("Error: %s\n", vim.inspect(err))
         return
     end
-    log.debug("lines: %s\n", vim.inspect(M.lines))
-
 end
 
 function M.GetRenderContext()
@@ -49,8 +47,6 @@ function M.GetRenderContext()
             table.insert(highlights, highlight)
         end
     end
-    log.debug("lines: %s\n", vim.inspect(lines))
-    log.debug("highlights: %s\n", vim.inspect(highlights))
     return lines, highlights
 end
 
@@ -165,8 +161,6 @@ end
 
 -- indent : icon : filename : gitstatus
 function M.GetTreeContext(tree, depth)
-    log.debug("abs_path: %s ftype: %s\n", tree.abs_path, tree.ftype)
-
     if M.filter and M.filter(tree, M.gitstatus) then
         return
     end

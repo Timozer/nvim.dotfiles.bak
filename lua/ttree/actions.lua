@@ -5,10 +5,15 @@ local log = require('ttree.log')
 local M = {
     finfo_win = nil,
     marks = {},
+    action = {
+        type = nil,
+        data = {}
+    },
+    action_info_win = nil,
 }
 
 function M.TestAction(node)
-    local resp = utils.GetInput("Please input a string: ")
+    local resp = utils.GetInputChar("Please input a string: ")
     utils.Input({
         prompt = "Please input a string: ",
         default = "hello neovim",
@@ -53,6 +58,9 @@ end
 -- end
 
 function M.EditFile(node)
+    if node.ftype ~= "file" and node.ftype == "link" and node.link_type ~= "file" then
+        return
+    end
     -- goto previous window
     vim.api.nvim_command("wincmd p")
 
@@ -61,6 +69,9 @@ function M.EditFile(node)
 end
 
 function M.SplitFile(node)
+    if node.ftype ~= "file" and node.ftype == "link" and node.link_type ~= "file" then
+        return
+    end
     vim.api.nvim_command("wincmd p")
 
     utils.Notify("[TTree] Edit File: " .. node.abs_path .. " winnr: " .. vim.inspect(winnr))
@@ -68,6 +79,9 @@ function M.SplitFile(node)
 end
 
 function M.VSplitFile(node)
+    if node.ftype ~= "file" and node.ftype == "link" and node.link_type ~= "file" then
+        return
+    end
     vim.api.nvim_command("wincmd p")
     utils.Notify("[TTree] Edit File: " .. node.abs_path .. " winnr: " .. vim.inspect(winnr))
     pcall(vim.cmd, "vsp "..vim.fn.fnameescape(node.ftype == "link" and node.link_to or node.abs_path))
@@ -221,27 +235,22 @@ function M.RemoveFile(node, renderer)
         return
     end
 
-    local parent = node.parent
+    local resp = utils.GetInputChar("Delete " .. node.abs_path .. " ? [y/n] ")
+    if resp ~= "y" then
+        return
+    end
 
-    local opts = { prompt = "Delete " .. node.abs_path .. " ?[y/n] " }
+    local job_rm = job.New({
+        path = "rm",
+        args = { "-r", "-f", node.abs_path },
+    })
+    job_rm:Run()
+    if job_rm.status ~= 0 then
+        utils.Notify("fail to remove " .. node.abs_path .. ", err: " .. job_rm.stderr)
+        return
+    end
 
-    vim.ui.input(opts, function(choice)
-        if not choice or choice == "n" then
-            return
-        end
-
-        local job_rm = job.New({
-            path = "rm",
-            args = { "-r", "-f", node.abs_path },
-        })
-        job_rm:Run()
-        if job_rm.status ~= 0 then
-            utils.Notify("fail to remove " .. node.abs_path .. ", err: " .. job_rm.stderr)
-            return
-        end
-
-        parent:Load()
-    end)
+    node.parent:Load()
     return true
 end
 
@@ -269,7 +278,6 @@ function M.ToggleMark(node, renderer)
 
     local lnum = renderer.view.GetCursor()[1]
     local signs = renderer.view.GetSign(lnum)[1]
-    log.debug("lnum: %s signs: %s\n", vim.inspect(lnum), vim.inspect(signs))
     if #signs.signs > 0 then
         renderer.view.ClearSign(signs.signs[1].id)
         for i, _ in ipairs(M.marks) do
@@ -282,7 +290,139 @@ function M.ToggleMark(node, renderer)
         renderer.view.SetSign("TTreeMark", lnum)
         table.insert(M.marks, node)
     end
-    log.debug("marks: %s\n", vim.inspect(M.marks))
+end
+
+function M.Copy(node, renderer)
+    M.action.type = "copy"
+    if #M.marks > 0 then
+        M.action.data = M.marks
+        M.marks = {}
+        renderer.view.ClearSign()
+    else
+        M.action.data = {}
+        table.insert(M.action.data, node)
+    end
+end
+
+function M.Cut(node, renderer)
+    M.action.type = "cut"
+    if #M.marks > 0 then
+        M.action.data = M.marks
+        M.marks = {}
+        renderer.view.ClearSign()
+    else
+        M.action.data = {}
+        table.insert(M.action.data, node)
+    end
+end
+
+function M.Paste(node, renderer)
+    if not (#M.action.data > 0) then
+        return
+    end
+
+    local paste_to = node
+    if node.ftype == "file" or (node.ftype == "link" and node.ftype == "file") then
+        paste_to = node.parent
+    end
+
+    local cmd = nil
+    local args = nil
+    if M.action.type == "cut" then
+        cmd = "mv"
+        args = {}
+    elseif M.action.type == "copy" then
+        cmd = "cp"
+        args = { "-rf" }
+    else
+        return
+    end
+
+    local idx = 1
+    while idx <= #M.action.data do
+        log.debug("idx: %d, paste: %s\n", idx, M.action.data[idx].abs_path)
+        local dst = utils.path_join({paste_to.abs_path, M.action.data[idx].name})
+
+        if M.action.data[idx].abs_path == dst then
+            goto continue
+        end
+        if utils.file_exists(dst) then
+            local resp = utils.GetInputChar("dst file " .. dst .. " exists, overwrite? [y/n] ")
+            if resp ~= "y" then
+                M.action.data = {}
+                break
+            end
+        end
+
+        tmpArgs = { M.action.data[idx].abs_path, paste_to.abs_path }
+        for j, aval in ipairs(args) do
+            table.insert(tmpArgs, j, aval)
+        end
+        job_paste = job.New({path = cmd, args = tmpArgs})
+        job_paste:Run()
+        if job_paste.status ~= 0 then
+            msg = "paste: " .. M.action.data[idx].abs_path .. " to " .. paste_to.abs_path .. " fail, err: " .. job_paste.stderr
+            utils.Notify(msg)
+            log.debug(msg)
+            break
+        end
+        msg = "paste " .. M.action.data[idx].abs_path .. " to " .. paste_to.abs_path .. " done"
+        utils.Notify(msg)
+        log.debug(msg)
+
+        ::continue::
+
+        table.remove(M.action.data, idx)
+    end
+
+    renderer.tree:Load()
+    return true
+end
+
+function M.ShowActionInfo(node, renderer)
+    local context = {
+        "Action Type: " .. vim.inspect(M.action.type),
+        "Data: ",
+    }
+
+    for i, val in ipairs(M.action.data) do
+        table.insert(context, val.abs_path)
+    end
+
+    local win_width = vim.fn.max(vim.tbl_map(function(n) return #n end, context))
+    local winnr = vim.api.nvim_open_win(0, false, {
+        col = 1,
+        row = 1,
+        relative = "cursor",
+        width = win_width + 1,
+        height = #context,
+        border = "shadow",
+        noautocmd = true,
+        style = "minimal",
+    })
+    M.action_info_win = { winnr = winnr, node = node }
+    local bufnr = vim.api.nvim_create_buf(false, true)
+    vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, context)
+    vim.api.nvim_win_set_buf(winnr, bufnr)
+
+    vim.cmd [[
+        augroup TTreeCloseActionInfoWin
+          au CursorMoved * lua require('ttree.actions')._CloseActionInfo()
+        augroup END
+    ]]
+end
+
+function M._CloseActionInfo()
+    if M.action_info_win ~= nil then
+        vim.api.nvim_win_close(M.action_info_win.winnr, { force = true })
+        vim.cmd "augroup TTreeCloseActionInfoWin | au! CursorMoved | augroup END"
+        M.action_info_win = nil
+    end
+end
+
+function M.ClearMarks(node, renderer)
+    renderer.view.ClearSign()
+    M.marks = {}
 end
 
 function M.MoveToParent(close)

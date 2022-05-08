@@ -25,14 +25,12 @@ function M:AddFolder(opts)
     opts.ftype = "folder"
     opts.nodes = {}
     opts.status = "closed"
-    log.debug("FTree AddFolder: %s\n", vim.inspect(opts))
     self:AddNode(opts)
 end
 
 function M:AddFile(opts)
     opts.ftype = "file"
     opts.ext = string.match(opts.name, ".?[^.]+%.(.*)") or ""
-    log.debug("FTree AddFile: %s\n", vim.inspect(opts))
     self:AddNode(opts)
 end
 
@@ -65,7 +63,6 @@ function M:FsStat()
 end
 
 function M.New(opts, load)
-    log.debug("FTree New Node: %s, Load: %s\n", vim.inspect(opts), load)
     local node = setmetatable(opts or {abs_path = vim.loop.fs_realpath(vim.loop.cwd()), ftype = "folder", nodes = {}, status="opened"}, M)
     node.name = node.name or vim.fn.fnamemodify(node.abs_path, ":t")
     if load == nil or load == true then
@@ -90,7 +87,6 @@ function M:Load()
         local path = utils.path_join({self.abs_path, name})
         if self:GetNode(path) == nil then
             t = t or (vim.loop.fs_stat(path) or {}).type
-            log.debug("FTree Next, ABS_PATH: %s, Type: %s\n", path, t)
             if t == "directory" and vim.loop.fs_access(path, "R") then
                 self:AddFolder({ abs_path = path, name = name })
             elseif t == "file" then
@@ -104,13 +100,15 @@ function M:Load()
     end
 
     -- 2. check node
-    for i, node in ipairs(self.nodes) do
-        if not utils.file_exists(node.abs_path) then
+    local i = 1
+    while i <= #self.nodes do
+        if not utils.file_exists(self.nodes[i].abs_path) then
             table.remove(self.nodes, i)
         else
-            if (node.ftype == "folder" or (node.ftype == "link" and node.link_type == "folder")) and node.status == "opened" then
-                node:Load()
+            if (self.nodes[i].ftype == "folder" or (self.nodes[i].ftype == "link" and self.nodes[i].link_type == "folder")) and self.nodes[i].status == "opened" then
+                self.nodes[i]:Load()
             end
+            i = i + 1
         end
     end
 

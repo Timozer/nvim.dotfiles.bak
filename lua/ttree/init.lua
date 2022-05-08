@@ -252,6 +252,51 @@ function M.setup(opts)
                         callback = renderer.DoAction(actions.ToggleMark),
                         desc = 'Show File Info' 
                     }
+                },
+                {
+                    mode = 'n',
+                    lhs = '<ESC>',
+                    rhs = '',
+                    opts = { 
+                        callback = renderer.DoAction(actions.ClearMarks),
+                        desc = 'Clear Marks' 
+                    }
+                },
+                {
+                    mode = 'n',
+                    lhs = '<C-c>',
+                    rhs = '',
+                    opts = { 
+                        callback = renderer.DoAction(actions.Copy),
+                        desc = 'Copy File' 
+                    }
+                },
+                {
+                    mode = 'n',
+                    lhs = '<C-x>',
+                    rhs = '',
+                    opts = { 
+                        callback = renderer.DoAction(actions.Cut),
+                        desc = 'Cut File' 
+                    }
+                },
+                {
+                    mode = 'n',
+                    lhs = 'p',
+                    rhs = '',
+                    opts = { 
+                        callback = renderer.DoAction(actions.Paste),
+                        desc = 'Paste File' 
+                    }
+                },
+                {
+                    mode = 'n',
+                    lhs = '<C-a>',
+                    rhs = '',
+                    opts = { 
+                        callback = renderer.DoAction(actions.ShowActionInfo),
+                        desc = 'Show Action Info' 
+                    }
                 }
             },
             ["help"] = {

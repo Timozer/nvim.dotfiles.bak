@@ -25,8 +25,6 @@ function M.New(opts)
 end
 
 function M:_Run()
-    log.debug("Job: %s\n", vim.inspect(self))
-
     if self.path == nil then
         return
     end
@@ -50,7 +48,6 @@ function M:_Run()
             log.error("ReadStdout Error: %s\n", vim.inspect(err))
             return
         end
-        log.debug("Stdout: %s\n", data)
         if data then
             self.stdout = self.stdout .. data
         end
@@ -78,7 +75,6 @@ end
 function M:OnFinish(code, signal)
     self.status = code or 0
     self.signal = signal or 0
-    log.debug("JobFinish Code: %s Signal: %s\n", code, signal)
 
     if self.timer:is_closing() or 
         self.stdout_pipe:is_closing() or self.stderr_pipe:is_closing() or 

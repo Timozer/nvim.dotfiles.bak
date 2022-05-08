@@ -13,7 +13,7 @@ function M.Notify(msg)
     end)
 end
 
-function M.GetInput(prompt)
+function M.GetInputChar(prompt)
     vim.api.nvim_command("redraw")
     print(prompt)
     local _, resp = pcall(vim.fn.getcharstr)

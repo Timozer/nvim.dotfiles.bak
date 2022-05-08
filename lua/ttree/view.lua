@@ -1,5 +1,3 @@
-local log = require("ttree.log")
-
 local M = {
     prev_focused_win = nil,
     tabs = {},
@@ -148,7 +146,6 @@ function M.SetSign(name, lnum)
     end
     local tabpage = vim.api.nvim_get_current_tabpage()
     local id = vim.fn.sign_place(lnum, "TTreeView", name, M.tabs[tabpage].buf.bufnr, {lnum = lnum})
-    log.debug("set sign id: %s\n", vim.inspect(id))
 end
 
 function M.ClearSign(id)
