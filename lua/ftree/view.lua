@@ -1,7 +1,7 @@
 local M = {
     prev_focused_win = nil,
     tabs = {},
-    highlight_namespace = vim.api.nvim_create_namespace("TTreeHighlights"),
+    highlight_namespace = vim.api.nvim_create_namespace("FTreeHighlights"),
 }
 
 function M.Open(opts)
@@ -19,13 +19,13 @@ function M.Open(opts)
     if not M.tabs[tabpage].buf or
         not M.tabs[tabpage].buf.bufnr or
         not vim.api.nvim_buf_is_valid(M.tabs[tabpage].buf.bufnr) then
-        M.tabs[tabpage].buf = require("ttree.buf").New({
-                name = "TTree_" .. tabpage,
+        M.tabs[tabpage].buf = require("ftree.buf").New({
+                name = "FTree_" .. tabpage,
                 opts = {
                     swapfile   = false,
                     buftype    = "nofile",
                     modifiable = false,
-                    filetype   = "TTree",
+                    filetype   = "FTree",
                     bufhidden  = "hide",
                     buflisted  = false,
                 },
@@ -33,7 +33,7 @@ function M.Open(opts)
     end
 
     if not M.tabs[tabpage].winnr or not vim.api.nvim_win_is_valid(M.tabs[tabpage].winnr) then
-        local window = require("ttree.win").New({
+        local window = require("ftree.win").New({
             bufnr = M.tabs[tabpage].buf.bufnr,
             width = 20,
             opts = {
@@ -135,7 +135,7 @@ function M.GetSign(lnum)
 
     local tabpage = vim.api.nvim_get_current_tabpage()
     return vim.fn.sign_getplaced(M.tabs[tabpage].buf.bufnr, {
-        group = "TTreeView",
+        group = "FTreeView",
         lnum = lnum,
     })
 end
@@ -145,7 +145,7 @@ function M.SetSign(name, lnum)
         return
     end
     local tabpage = vim.api.nvim_get_current_tabpage()
-    local id = vim.fn.sign_place(lnum, "TTreeView", name, M.tabs[tabpage].buf.bufnr, {lnum = lnum})
+    local id = vim.fn.sign_place(lnum, "FTreeView", name, M.tabs[tabpage].buf.bufnr, {lnum = lnum})
 end
 
 function M.ClearSign(id)
@@ -153,7 +153,7 @@ function M.ClearSign(id)
         return
     end
     local tabpage = vim.api.nvim_get_current_tabpage()
-    vim.fn.sign_unplace("TTreeView", { buffer = M.tabs[tabpage].buf.bufnr, id = id })
+    vim.fn.sign_unplace("FTreeView", { buffer = M.tabs[tabpage].buf.bufnr, id = id })
 end
 
 return M

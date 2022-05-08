@@ -48,7 +48,7 @@ local maps = {
 --     lhs = '<CR>',
 --     rhs = '',
 --     opts = { 
---         callback = require('ttree.actions').CR,
+--         callback = require('ftree.actions').CR,
 --         desc = 'CR Action' 
 --     }
 -- }

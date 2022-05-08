@@ -20,22 +20,22 @@ local M = {
             color = "#41535b",
             name = "DsStore",
         },
-        ["gitattributes"] = {
+        [".gitattributes"] = {
             icon = "",
             color = "#41535b",
             name = "GitAttributes",
         },
-        ["gitconfig"] = {
+        [".gitconfig"] = {
             icon = "",
             color = "#41535b",
             name = "GitConfig",
         },
-        ["gitignore"] = {
+        [".gitignore"] = {
             icon = "",
             color = "#41535b",
             name = "GitIgnore",
         },
-        ["gitmodules"] = {
+        [".gitmodules"] = {
             icon = "",
             color = "#41535b",
             name = "GitModules",
@@ -593,7 +593,7 @@ function M.GetIcon(filename)
             name = "Default",
         }
     end
-    return ret.icon, "HlIcon" .. ret.name
+    return ret.icon, "Icon" .. ret.name
 end
 
 function M.setup(opts)
@@ -601,9 +601,8 @@ function M.setup(opts)
     vim.tbl_extend("force", M.icons, opts)
     for _, v in pairs(M.icons) do
         local fg = " guifg=" .. v.color
-        vim.api.nvim_command("hi def HlIcon" .. v.name .. fg)
+        vim.api.nvim_command("hi def Icon" .. v.name .. fg)
     end
 end
-
 
 return M

@@ -1,6 +1,6 @@
-local utils = require "ttree.utils"
+local utils = require "ftree.utils"
 
-local log = require("ttree.log")
+local log = require("ftree.log")
 
 local M = {
     is_windows = vim.fn.has "win32" == 1,

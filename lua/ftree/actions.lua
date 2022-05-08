@@ -1,6 +1,6 @@
-local utils = require('ttree.utils')
-local job = require('ttree.job')
-local log = require('ttree.log')
+local utils = require('ftree.utils')
+local job = require('ftree.job')
+local log = require('ftree.log')
 
 local M = {
     finfo_win = nil,
@@ -21,7 +21,7 @@ function M.TestAction(node)
         if input == nil then
             input = "nothing"
         end
-        utils.Notify("[TTree] your input: " .. input)
+        utils.Notify("[FTree] your input: " .. input)
     end)
 end
 
@@ -64,7 +64,7 @@ function M.EditFile(node)
     -- goto previous window
     vim.api.nvim_command("wincmd p")
 
-    utils.Notify("[TTree] Edit File: " .. node.abs_path .. " winnr: " .. vim.inspect(winnr))
+    utils.Notify("[FTree] Edit File: " .. node.abs_path .. " winnr: " .. vim.inspect(winnr))
     pcall(vim.cmd, "edit "..vim.fn.fnameescape(node.ftype == "link" and node.link_to or node.abs_path))
 end
 
@@ -74,7 +74,7 @@ function M.SplitFile(node)
     end
     vim.api.nvim_command("wincmd p")
 
-    utils.Notify("[TTree] Edit File: " .. node.abs_path .. " winnr: " .. vim.inspect(winnr))
+    utils.Notify("[FTree] Edit File: " .. node.abs_path .. " winnr: " .. vim.inspect(winnr))
     pcall(vim.cmd, "sp "..vim.fn.fnameescape(node.ftype == "link" and node.link_to or node.abs_path))
 end
 
@@ -83,7 +83,7 @@ function M.VSplitFile(node)
         return
     end
     vim.api.nvim_command("wincmd p")
-    utils.Notify("[TTree] Edit File: " .. node.abs_path .. " winnr: " .. vim.inspect(winnr))
+    utils.Notify("[FTree] Edit File: " .. node.abs_path .. " winnr: " .. vim.inspect(winnr))
     pcall(vim.cmd, "vsp "..vim.fn.fnameescape(node.ftype == "link" and node.link_to or node.abs_path))
 end
 
@@ -115,7 +115,7 @@ function M.DirOut(node, renderer)
     local cur_tree = renderer.tree
 
     if cur_tree.parent == nil then
-        local tree = require("ttree.node").New({
+        local tree = require("ftree.node").New({
                 abs_path = vim.fn.fnamemodify(cur_tree.abs_path, ":h"),
                 ftype = "folder",
                 status = "opened",
@@ -287,7 +287,7 @@ function M.ToggleMark(node, renderer)
             end
         end
     else
-        renderer.view.SetSign("TTreeMark", lnum)
+        renderer.view.SetSign("FTreeMark", lnum)
         table.insert(M.marks, node)
     end
 end
@@ -406,8 +406,8 @@ function M.ShowActionInfo(node, renderer)
     vim.api.nvim_win_set_buf(winnr, bufnr)
 
     vim.cmd [[
-        augroup TTreeCloseActionInfoWin
-          au CursorMoved * lua require('ttree.actions')._CloseActionInfo()
+        augroup FTreeCloseActionInfoWin
+          au CursorMoved * lua require('ftree.actions')._CloseActionInfo()
         augroup END
     ]]
 end
@@ -415,7 +415,7 @@ end
 function M._CloseActionInfo()
     if M.action_info_win ~= nil then
         vim.api.nvim_win_close(M.action_info_win.winnr, { force = true })
-        vim.cmd "augroup TTreeCloseActionInfoWin | au! CursorMoved | augroup END"
+        vim.cmd "augroup FTreeCloseActionInfoWin | au! CursorMoved | augroup END"
         M.action_info_win = nil
     end
 end
@@ -512,7 +512,7 @@ function M.ToggleGitIgnoredFiles(node, renderer)
     if renderer.filter ~= nil then
         renderer.filter = nil
     else
-        renderer.filter = require("ttree.filter").IsGitIgnored
+        renderer.filter = require("ftree.filter").IsGitIgnored
     end
     return true
 end
@@ -521,7 +521,7 @@ function M.ToggleDotFiles(node, renderer)
     if renderer.filter ~= nil then
         renderer.filter = nil
     else
-        renderer.filter = require("ttree.filter").IsDotFile
+        renderer.filter = require("ftree.filter").IsDotFile
     end
     return true
 end
@@ -553,8 +553,8 @@ function M.ShowFileInfo(node, renderer)
     vim.api.nvim_win_set_buf(winnr, bufnr)
 
     vim.cmd [[
-        augroup TTreeCloseFileInfoWin
-          au CursorMoved * lua require('ttree.actions')._CloseFileInfo()
+        augroup FTreeCloseFileInfoWin
+          au CursorMoved * lua require('ftree.actions')._CloseFileInfo()
         augroup END
     ]]
 end
@@ -562,13 +562,13 @@ end
 function M._CloseFileInfo()
     if M.finfo_win ~= nil then
         vim.api.nvim_win_close(M.finfo_win.winnr, { force = true })
-        vim.cmd "augroup TTreeCloseFileInfoWin | au! CursorMoved | augroup END"
+        vim.cmd "augroup FTreeCloseFileInfoWin | au! CursorMoved | augroup END"
         M.finfo_win = nil
     end
 end
 
 function M.setup(opts)
-    vim.fn.sign_define("TTreeMark", { text = "*" })
+    vim.fn.sign_define("FTreeMark", { text = "*" })
 end
 
 return M

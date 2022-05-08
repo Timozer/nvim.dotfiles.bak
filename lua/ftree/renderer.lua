@@ -1,7 +1,7 @@
 
-local log = require("ttree.log")
-local utils = require("ttree.utils")
-local icons = require("ttree.icons")
+local log = require("ftree.log")
+local utils = require("ftree.utils")
+local icons = require("ftree.icons")
 
 lines = {
     {
@@ -22,7 +22,7 @@ local M = {
 
 function M._RefreshGitStatus()
     M.gitstatus = nil
-    local ret = require("ttree.git").Status(M.tree.abs_path)
+    local ret = require("ftree.git").Status(M.tree.abs_path)
     if ret.result == "success" then
         M.gitstatus = ret.data
     end
@@ -72,17 +72,17 @@ function M.GetNodeIcon(node)
         icon, hl = icons.GetIcon(node.name)
     elseif node.ftype == "folder" then
         icon = node.status == "closed" and "" or ""
-        hl = node.status == "closed" and "TTreeFolderClosed" or "TTreeFolderOpened"
+        hl = node.status == "closed" and "FTreeFolderClosed" or "FTreeFolderOpened"
     elseif node.ftype == "link" then
         icon = node.link_type == "folder" and "" or ""
-        hl = node.link_type == "folder" and "TTreeSymlinkFolder" or "TTreeSymlinkFile"
+        hl = node.link_type == "folder" and "FTreeSymlinkFolder" or "FTreeSymlinkFile"
     end
     return icon, hl
 end
 
 -- local gitIcons = {
---     ["M "] = { { "[M]", "TTreeGitStaged" } },
---     [" M"] = { { "[M]", "TTreeGitModified" } },
+--     ["M "] = { { "[M]", "FTreeGitStaged" } },
+--     [" M"] = { { "[M]", "FTreeGitModified" } },
 --     ["C "] = { { icon = i.staged, hl = "NvimTreeGitStaged" } },
 --     [" C"] = { { icon = i.unstaged, hl = "NvimTreeGitDirty" } },
 --     ["CM"] = { { icon = i.unstaged, hl = "NvimTreeGitDirty" } },
@@ -144,17 +144,17 @@ function M.GetGitIcon(node)
         return "", ""
     end
     if stat == "M " then
-        return "[M]", "TTreeGitStaged"
+        return "[M]", "FTreeGitStaged"
     elseif stat == " M" then
-        return "[M]", "TTreeGitModified"
+        return "[M]", "FTreeGitModified"
     elseif stat == "R " or stat == " R" then
-        return "[R]", "TTreeGitRenamed"
+        return "[R]", "FTreeGitRenamed"
     elseif stat == " A" then
-        return "[A]", "TTreeGitAdded"
+        return "[A]", "FTreeGitAdded"
     elseif stat == "??" then
-        return "[★]", "TTreeGitUntracked"
+        return "[★]", "FTreeGitUntracked"
     elseif stat == "!!" then
-        return "[◌]", "TTreeGitIgnored"
+        return "[◌]", "FTreeGitIgnored"
     end
     return "", ""
 end
@@ -183,7 +183,7 @@ function M.GetTreeContext(tree, depth)
             utils.path_remove_trailing(vim.fn.fnamemodify(tree.abs_path, ":~")),
             "..",
         }
-        name_hl = "TTreeRootFolder"
+        name_hl = "FTreeRootFolder"
         gitstatus = ""
         gitstatus_hl = ""
     end

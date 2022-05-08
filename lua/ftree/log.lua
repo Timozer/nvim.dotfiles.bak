@@ -54,7 +54,7 @@ function M.setup(opts)
             M.config.path
         )
     end
-    print("ttree.lua logging to " .. M.config.path)
+    print("ftree.lua logging to " .. M.config.path)
 end
 
 return M

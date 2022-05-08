@@ -1,5 +1,5 @@
 local uv = vim.loop
-local log = require "ttree.log"
+local log = require "ftree.log"
 
 local M = {}
 M.__index = M
