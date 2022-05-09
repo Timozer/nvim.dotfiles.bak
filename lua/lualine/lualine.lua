@@ -141,37 +141,37 @@ end
 ---@param is_focused boolean : whether being evsluated for focused window or not
 ---@return string statusline string
 local statusline = modules.utils.retry_call_wrap(function(sections, is_focused)
-  -- The sequence sections should maintain [SECTION_SEQUENCE]
-  local section_sequence = { 'a', 'b', 'c', 'x', 'y', 'z' }
-  local status = {}
-  local applied_midsection_divider = false
-  local applied_trunc = false
-  for _, section_name in ipairs(section_sequence) do
-    if sections['lualine_' .. section_name] then
-      -- insert highlight+components of this section to status_builder
-      local section_data = modules.utils_section.draw_section(
-        sections['lualine_' .. section_name],
-        section_name,
-        is_focused
-      )
-      if #section_data > 0 then
-        if not applied_midsection_divider and section_name > 'c' then
-          applied_midsection_divider = true
-          section_data = modules.highlight.format_highlight('c', is_focused) .. '%=' .. section_data
+    -- The sequence sections should maintain [SECTION_SEQUENCE]
+    local section_sequence = { 'a', 'b', 'c', 'x', 'y', 'z' }
+    local status = {}
+    local applied_midsection_divider = false
+    local applied_trunc = false
+    for _, section_name in ipairs(section_sequence) do
+        if sections['lualine_' .. section_name] then
+            -- insert highlight+components of this section to status_builder
+            local section_data = modules.utils_section.draw_section(
+            sections['lualine_' .. section_name],
+            section_name,
+            is_focused
+            )
+            if #section_data > 0 then
+                if not applied_midsection_divider and section_name > 'c' then
+                    applied_midsection_divider = true
+                    section_data = modules.highlight.format_highlight('c', is_focused) .. '%=' .. section_data
+                end
+                if not applied_trunc and section_name > 'b' then
+                    applied_trunc = true
+                    section_data = '%<' .. section_data
+                end
+                table.insert(status, section_data)
+            end
         end
-        if not applied_trunc and section_name > 'b' then
-          applied_trunc = true
-          section_data = '%<' .. section_data
-        end
-        table.insert(status, section_data)
-      end
     end
-  end
-  if applied_midsection_divider == false and config.options.always_divide_middle ~= false then
-    -- When non of section x,y,z is present
-    table.insert(status, modules.highlight.format_highlight('c', is_focused) .. '%=')
-  end
-  return apply_transitional_separators(table.concat(status), is_focused)
+    if applied_midsection_divider == false and config.options.always_divide_middle ~= false then
+        -- When non of section x,y,z is present
+        table.insert(status, modules.highlight.format_highlight('c', is_focused) .. '%=')
+    end
+    return apply_transitional_separators(table.concat(status), is_focused)
 end)
 
 --- check if any extension matches the filetype and return proper sections
@@ -320,7 +320,47 @@ end
 --- initialized when we know we will use them.
 --- sets &last_status tl 2
 ---@param user_config table table
-local function setup(user_config)
+local function setup()
+  local user_config = {
+        options = {
+            icons_enabled = true,
+            theme = 'onedark',
+            disabled_filetypes = {
+                'NvimTree', 'OUTLINE',
+            },
+            component_separators = '|',
+            section_separators = {left = '', right = ''}
+        },
+
+        sections = {
+            lualine_a = {'filename'},
+            lualine_b = {{'branch'}, {'diff'}},
+            lualine_c = {},
+            lualine_x = {
+                {
+                    'diagnostics',
+                    sources = {'nvim_lsp'},
+                    color_error = "#BF616A",
+                    color_warn = "#EBCB8B",
+                    color_info = "#81A1AC",
+                    color_hint = "#88C0D0",
+                    symbols = {error = ' ', warn = ' ', info = ' '}
+                },
+            },
+            lualine_y = {'filetype', 'encoding', 'fileformat'},
+            lualine_z = {'progress', 'location'}
+        },
+        inactive_sections = {
+            lualine_a = {},
+            lualine_b = {},
+            lualine_c = {'filename'},
+            lualine_x = {'location'},
+            lualine_y = {},
+            lualine_z = {}
+        },
+        tabline = {},
+        extensions = {}
+}
   if package.loaded['lualine.utils.notices'] then
     -- When notices module is not loaded there are no notices to clear.
     modules.utils_notices.clear_notices()
