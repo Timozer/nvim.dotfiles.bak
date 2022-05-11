@@ -26,13 +26,6 @@ local plugins = {
         event = 'BufRead',
         config = require('plugins.config.indent_blankline').init
     },
-    lualine = {
-        'lualine.nvim',
-        requires = {
-            {'nvim-web-devicons', opt = true},
-        },
-        config = require('plugins.config.lualine').init
-    },
     nui_nvim = {
         'nui.nvim'
     },
@@ -57,14 +50,6 @@ local plugins = {
         run = 'make',
         config = require('plugins.config.telescope_fzf_native').init
     },
-    -- file explorer
-    -- nvim_tree = {
-    --     'nvim-tree.lua',
-    --     opt = true,
-    --     cmd = 'NvimTreeToggle',
-    --     requires = 'nvim-web-devicons',
-    --     config = require('plugins.config.nvim_tree').init
-    -- },
     -- symbols explorer
     symbols_outline = {
         'symbols-outline.nvim',
