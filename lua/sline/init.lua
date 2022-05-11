@@ -1,15 +1,18 @@
-
-local function FuncComponent()
-    return "TestComponent"
-end
-
 local M = {
     data = {
-        {"%f%m%r", "2"},
-        {"3"},
-        FuncComponent,
-        "StrComponent",
-        {vim.bo.filetype, "%b", "%p%% : %l/%L,%c%V"},
+        {
+            "%#SlineFilename#%{%v:lua.require('sline.components').Filename('relative')%}%#SlineFileStatus#%m%r"
+        },
+        {
+            "%#SlineFiletype#",
+            require("sline.components").Filetype, 
+            "%#SlineFileformat#",
+            require("sline.components").Fileformat, 
+            "%#SlineEncoding#",
+            require("sline.components").Encoding, 
+            "%#SlineLocation#",
+            "%3p%% : %l/%L,%c"
+        },
     },
     disabled_filetypes = {
         "FTree"
@@ -43,14 +46,23 @@ function M.StatusLine()
             status = status .. sep .. "(" .. sect() .. "%)"
         elseif type(sect) == "table" then
             local items = {}
+            local highlight_str = "%#SlineDefault#"
             for _, item in pairs(sect) do
-                if type(item) == "string" and StrTrim(item) ~= "" then
-                    table.insert(items, StrTrim(item))
-                elseif type(item) == "function" and StrTrim(item()) ~= "" then
-                    table.insert(items, StrTrim(item()))
+                local context = item
+                if type(item) == "function" then
+                    context = item()
+                end
+                context = StrTrim(context)
+                if context:match("^%%#.*#$") then
+                    highlight_str = context
+                else
+                    if context ~= "" then
+                        table.insert(items, highlight_str .. context)
+                    end
+                    highlight_str = "%#SlineDefault#"
                 end
             end
-            status = status .. sep .. "(" .. table.concat(items, " | ") .. "%)"
+            status = status .. "%<" .. sep .. "(" .. table.concat(items, " | ") .. "%)"
         end
     end
 
@@ -61,15 +73,13 @@ function M.SetUp(opts)
     opts = opts or {}
 
     vim.cmd([[
-        augroup SLINE
-        autocmd!
-        autocmd VimResized * redrawstatus
-        augroup END
+    augroup SLINE
+    autocmd!
+    autocmd VimResized * redrawstatus
+    augroup END
     ]])
 
     vim.go.statusline = "%{%v:lua.require('sline').StatusLine()%}"
 end
--- %#lualine_a_normal# [No Name] %#lualine_transitional_lualine_a_normal_to_lualine_b_normal#%#lualine_b_normal#  master %#lualine_transitional_lualine_b_normal_to_lualine_c_normal#%<%#lualine_c_normal#%=%#lualine_transitional_lualine_b_normal_to_lualine_c_normal#%#lualine_b_normal# utf-8 |%#lualine_b_normal#  %#lualine_transitional_lualine_a_normal_to_lualine_b_normal#%#lualine_a_normal# %3p%% |%#lualine_a_normal# %3l:%-2v 
 
--- %<%#lualine_c_inactive# [No Name] %#lualine_c_inactive#%=%#lualine_c_inactive# %3l:%-2v 
 return M

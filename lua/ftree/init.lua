@@ -75,6 +75,13 @@ local highlights = {
         FTreeGitStaged = { fg = "#7b9969" },
         FTreeGitAdded = { fg = "#699373" },
         FTreeGitRenamed = { fg = "#cbcb3c" },
+        SlineFilename = { fg = "#ffff00", bg = '#282c34', gui = 'bold'},
+        SlineFileStatus = { fg = "#ff0000", bg = '#282c34' },
+        SlineFiletype = { fg = "#00ffff", bg = '#282c34' },
+        SlineFileformat = { fg = "#00ffff", bg = '#282c34' },
+        SlineEncoding = { fg = "#00ffff", bg = '#282c34' },
+        SlineLocation = { fg = "#00ffff", bg = '#282c34' },
+        SlineDefault = { fg = '#c5cdd9', bg = '#282c34' },
     },
     links = {
     }
