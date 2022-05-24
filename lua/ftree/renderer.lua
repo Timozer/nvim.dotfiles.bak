@@ -233,7 +233,7 @@ function M.Toggle()
 end
 
 function M.Focus()
-    vim.api.nvim_set_current_win(M.view.GetWinnr())
+    vim.api.nvim_set_current_win(M.view.GetWinid())
 end
 
 function M.ShowTree(view, tree)

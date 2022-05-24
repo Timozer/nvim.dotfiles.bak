@@ -39,8 +39,16 @@ function M.setup(opts)
     vim.cmd "autocmd!"
 
     vim.cmd "au ColorScheme * lua require('ftree').ResetHighlights()"
+    vim.cmd "au WinEnter FTree* lua require('ftree').CloseWhenOnlySelf()"
 
     vim.cmd "augroup end"
+end
+
+function M.CloseWhenOnlySelf()
+    local wins = vim.api.nvim_list_wins()
+    if #wins == 1 and wins[1] == require("ftree.renderer").view:GetWinid() then
+        vim.cmd ":q"
+    end
 end
 
 local function SetHighlightGroups(groups)

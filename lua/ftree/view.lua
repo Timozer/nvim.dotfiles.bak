@@ -60,7 +60,7 @@ function M.Open(opts)
 
 end
 
-function M.GetWinnr()
+function M.GetWinid()
     if M.tabs then
         local tabpage = vim.api.nvim_get_current_tabpage()
         if M.tabs[tabpage] and M.tabs[tabpage].win then
