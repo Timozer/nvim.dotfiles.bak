@@ -91,6 +91,72 @@ function M.GetByFileName(fname)
     return nil
 end
 
+function M.DelBufByNrs(nrs, force)
+    force = force or true
+    nrs = nrs or {}
+    if type(nrs) ~= "table" then
+        nrs = { nrs }
+    end
+
+    for _, nr in ipairs(nrs) do
+        if vim.api.nvim_buf_is_valid(nr) then
+            vim.api.nvim_buf_delete(nr, { force = force })
+        end
+    end
+end
+
+function M.DelBufByNames(names, force)
+    names = names or {}
+    if type(names) ~= "table" then
+        names = { names }
+    end
+
+    nrs = {}
+    for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
+        bname = vim.api.nvim_buf_get_name(bufnr)
+        for _, name in ipairs(names) do
+            if bname == name then
+                table.insert(nrs, bufnr)
+                break
+            end
+        end
+    end
+
+    M.DelBufByNrs(nrs, force)
+end
+
+function M.DelBufByNamePrefix(prefix, force)
+    nrs = {}
+    for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
+        bname = vim.api.nvim_buf_get_name(bufnr)
+        if string.find(bname, prefix) == 1 then
+            table.insert(nrs, bufnr)
+        end
+    end
+    M.DelBufByNrs(nrs, force)
+end
+
+function M.RenameBuf(oldname, newname)
+    for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
+        if vim.api.nvim_buf_get_name(bufnr) == oldname then
+            vim.api.nvim_buf_set_name(bufnr, newname)
+            break
+        end
+    end
+end
+
+function M.RenameBufByNamePrefix(prefix, newprefix)
+    for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
+        bname = vim.api.nvim_buf_get_name(bufnr)
+        s, e = string.find(bname, prefix)
+        if s == 1 then
+            newname = newprefix .. string.sub(bname, e + 1)
+            vim.api.nvim_buf_set_name(bufnr, newname)
+        end
+    end
+end
+
+
 function M:Loaded()
     return self:Valid() and vim.api.nvim_buf_is_loaded(self.bufnr)
 end

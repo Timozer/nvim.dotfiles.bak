@@ -1,6 +1,7 @@
 local utils = require('ftree.utils')
 local job = require('ftree.job')
 local log = require('ftree.log')
+local buf = require('lib.buf')
 
 local M = {
     finfo_win = nil,
@@ -11,19 +12,6 @@ local M = {
     },
     action_info_win = nil,
 }
-
-function M.TestAction(node)
-    local resp = utils.GetInputChar("Please input a string: ")
-    utils.Input({
-        prompt = "Please input a string: ",
-        default = "hello neovim",
-    }, function(input) 
-        if input == nil then
-            input = "nothing"
-        end
-        utils.Notify("[FTree] your input: " .. input)
-    end)
-end
 
 function M.CR(node)
     if node and node.nodes then
@@ -215,6 +203,7 @@ function M.RenameFile(node)
             return
         end
 
+        old_path = node.abs_path
         node.name = fname
         node.abs_path = abs_path
         if node.ftype == "folder" or (node.ftype == "link" and node.link_type == "folder") then
@@ -222,9 +211,8 @@ function M.RenameFile(node)
             if node.status == "opened" then
                 node:Expand()
             end
-        elseif node.ftype == "file" or (node.ftype == "link" and node.link_type == "file") then
-            -- TODO rename loaded buffers
         end
+        buf.RenameBufByNamePrefix(old_path, node.abs_path)
     end)
     return true
 end
@@ -249,6 +237,8 @@ function M.RemoveFile(node, renderer)
         utils.Notify("fail to remove " .. node.abs_path .. ", err: " .. job_rm.stderr)
         return
     end
+
+    buf.DelBufByNamePrefix(node.abs_path, true)
 
     node.parent:Load()
     return true
@@ -343,32 +333,50 @@ function M.Paste(node, renderer)
         log.debug("idx: %d, paste: %s\n", idx, M.action.data[idx].abs_path)
         local dst = utils.path_join({paste_to.abs_path, M.action.data[idx].name})
 
-        if M.action.data[idx].abs_path == dst then
-            goto continue
-        end
-        if utils.file_exists(dst) then
-            local resp = utils.GetInputChar("dst file " .. dst .. " exists, overwrite? [y/n] ")
-            if resp ~= "y" then
-                M.action.data = {}
+        while true do
+            if not utils.file_exists(dst) then
                 break
+            end
+
+            local resp = utils.GetInputChar(dst .. " exists, rename/overwrite/cancel? [r/o/c] ")
+            if resp == "r" then
+                local opts = { 
+                    prompt = "Rename " .. M.action.data[idx].abs_path .. " to: ",
+                    default = dst,
+                }
+                vim.ui.input(opts, function(fname)
+                    if fname == nil or #fname == 0 then
+                        dst = ""
+                        return
+                    end
+                    dst = fname
+                end)
+                if dst == "" then
+                    goto continue
+                end
+            elseif resp == "o" then
+                break
+            else
+                goto continue
             end
         end
 
-        tmpArgs = { M.action.data[idx].abs_path, paste_to.abs_path }
+        tmpArgs = { M.action.data[idx].abs_path, dst }
         for j, aval in ipairs(args) do
             table.insert(tmpArgs, j, aval)
         end
         job_paste = job.New({path = cmd, args = tmpArgs})
         job_paste:Run()
         if job_paste.status ~= 0 then
-            msg = "paste: " .. M.action.data[idx].abs_path .. " to " .. paste_to.abs_path .. " fail, err: " .. job_paste.stderr
+            msg = "paste: " .. M.action.data[idx].abs_path .. " to " .. dst .. " fail, err: " .. job_paste.stderr
             utils.Notify(msg)
             log.debug(msg)
             break
         end
-        msg = "paste " .. M.action.data[idx].abs_path .. " to " .. paste_to.abs_path .. " done"
+        msg = "paste " .. M.action.data[idx].abs_path .. " to " .. dst .. " done"
         utils.Notify(msg)
         log.debug(msg)
+        buf.RenameBufByNamePrefix(M.action.data[idx].abs_path, dst)
 
         ::continue::
 

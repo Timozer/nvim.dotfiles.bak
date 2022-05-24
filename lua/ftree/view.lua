@@ -19,7 +19,7 @@ function M.Open(opts)
     if not M.tabs[tabpage].buf or
         not M.tabs[tabpage].buf.bufnr or
         not vim.api.nvim_buf_is_valid(M.tabs[tabpage].buf.bufnr) then
-        M.tabs[tabpage].buf = require("ftree.buf").New({
+        M.tabs[tabpage].buf = require("lib.buf").New({
                 name = "FTree_" .. tabpage,
                 opts = {
                     swapfile   = false,
