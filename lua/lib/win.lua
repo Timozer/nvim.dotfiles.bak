@@ -52,10 +52,8 @@ function M:SetOption(key, val)
 end
 
 function M:SetOptions(opts)
-    if type(opts) == 'table' and #opts > 0 then
-        for k, v in pairs(opts) do
-            self:SetOption(k, v)
-        end
+    for k, v in pairs(opts) do
+        self:SetOption(k, v)
     end
 end
 

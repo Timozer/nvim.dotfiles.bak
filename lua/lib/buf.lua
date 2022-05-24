@@ -7,6 +7,7 @@ function M.New(opts)
 
     local buf = setmetatable(opts or {}, M)
     buf.bufnr = vim.api.nvim_create_buf(false, false)
+    buf.options = {}
 
     if buf.name then
         vim.api.nvim_buf_set_name(buf.bufnr, buf.name)
@@ -34,10 +35,8 @@ function M:SetOption(key, val)
 end
 
 function M:SetOptions(opts)
-    if type(opts) == 'table' and #opts > 0 then
-        for k, v in pairs(opts) do
-            self:SetOption(k, v)
-        end
+    for k, v in pairs(opts) do
+        self:SetOption(k, v)
     end
 end
 

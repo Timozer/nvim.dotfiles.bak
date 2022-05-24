@@ -140,10 +140,10 @@ local plugins = {
         },
         config = require('plugins.config.nvim_comment').init
     },
-    auto_session = {
-        'auto-session',
-        config = require('plugins.config.auto_session').init
-    },
+    -- auto_session = {
+      --   'auto-session',
+        -- config = require('plugins.config.auto_session').init
+    -- },
 }
 
 return plugins
