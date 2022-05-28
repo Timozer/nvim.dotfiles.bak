@@ -46,32 +46,29 @@ end
 -- end
 
 function M.EditFile(node)
-    if node.ftype ~= "file" and node.ftype == "link" and node.link_type ~= "file" then
+    if node.ftype == "link" and node.link_type ~= "file" or node.ftype ~= "file" then
         return
     end
-    -- goto previous window
-    vim.api.nvim_command("wincmd p")
 
-    utils.Notify("[FTree] Edit File: " .. node.abs_path .. " winnr: " .. vim.inspect(winnr))
+    vim.api.nvim_command("wincmd p")
     pcall(vim.cmd, "edit "..vim.fn.fnameescape(node.ftype == "link" and node.link_to or node.abs_path))
 end
 
 function M.SplitFile(node)
-    if node.ftype ~= "file" and node.ftype == "link" and node.link_type ~= "file" then
+    if node.ftype == "link" and node.link_type ~= "file" or node.ftype ~= "file" then
         return
     end
-    vim.api.nvim_command("wincmd p")
 
-    utils.Notify("[FTree] Edit File: " .. node.abs_path .. " winnr: " .. vim.inspect(winnr))
+    vim.api.nvim_command("wincmd p")
     pcall(vim.cmd, "sp "..vim.fn.fnameescape(node.ftype == "link" and node.link_to or node.abs_path))
 end
 
 function M.VSplitFile(node)
-    if node.ftype ~= "file" and node.ftype == "link" and node.link_type ~= "file" then
+    if node.ftype == "link" and node.link_type ~= "file" or node.ftype ~= "file" then
         return
     end
+
     vim.api.nvim_command("wincmd p")
-    utils.Notify("[FTree] Edit File: " .. node.abs_path .. " winnr: " .. vim.inspect(winnr))
     pcall(vim.cmd, "vsp "..vim.fn.fnameescape(node.ftype == "link" and node.link_to or node.abs_path))
 end
 
@@ -212,7 +209,13 @@ function M.RenameFile(node)
                 node:Expand()
             end
         end
-        buf.RenameBufByNamePrefix(old_path, node.abs_path)
+
+        if node.ftype == "folder" then
+            buf.RenameBufByNamePrefix(old_path .. "/", node.abs_path .. "/")
+        else
+            buf.RenameBufByNamePrefix(old_path, node.abs_path)
+        end
+
     end)
     return true
 end
@@ -238,7 +241,12 @@ function M.RemoveFile(node, renderer)
         return
     end
 
-    buf.DelBufByNamePrefix(node.abs_path, true)
+    rm_path = node.abs_path
+    if node.ftype == "folder" then
+        rm_path = rm_path .. "/"
+    end
+
+    buf.DelBufByNamePrefix(rm_path, true)
 
     node.parent:Load()
     return true
@@ -376,7 +384,12 @@ function M.Paste(node, renderer)
         msg = "paste " .. M.action.data[idx].abs_path .. " to " .. dst .. " done"
         utils.Notify(msg)
         log.debug(msg)
-        buf.RenameBufByNamePrefix(M.action.data[idx].abs_path, dst)
+
+        if M.action.data[idx].ftype == "folder" then
+            buf.RenameBufByNamePrefix(M.action.data[idx].abs_path .. "/", dst .. "/")
+        else
+            buf.RenameBufByNamePrefix(M.action.data[idx].abs_path, dst)
+        end
 
         ::continue::
 

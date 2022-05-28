@@ -36,7 +36,7 @@ end
 
 function M:AddLink(opts)
     opts.ftype = "link"
-    opts.link_to = vim.loop.fs_realpath(path) 
+    opts.link_to = vim.loop.fs_realpath(opt.abs_path) 
     if opts.link_to ~= nil then
         ltype = vim.loop.fs_stat(opts.link_to).type
         if ltype == "directory" then
