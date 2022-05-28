@@ -40,6 +40,7 @@ function M.setup(opts)
 
     vim.cmd "au ColorScheme * lua require('ftree').ResetHighlights()"
     vim.cmd "au WinEnter FTree* lua require('ftree').CloseWhenOnlySelf()"
+    vim.cmd "au WinEnter FTree* lua require('ftree.view').SavePrevWinid()"
 
     vim.cmd "augroup end"
 end

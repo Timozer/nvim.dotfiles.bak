@@ -1,15 +1,36 @@
 local M = {
-    prev_focused_win = nil,
+    prev_win = nil,
     tabs = {},
     highlight_namespace = vim.api.nvim_create_namespace("FTreeHighlights"),
 }
+
+function M.SavePrevWinid()
+    local cur = vim.api.nvim_get_current_win()
+
+    vim.api.nvim_command("wincmd p")
+    M.prev_win = vim.api.nvim_get_current_win()
+
+    vim.api.nvim_set_current_win(cur)
+end
+
+function M.GetValidPrevWinid()
+    if not M.prev_win or not vim.api.nvim_win_is_valid(M.prev_win) then
+        local cur = vim.api.nvim_get_current_win()
+
+        vim.api.nvim_command("wincmd l")
+        M.prev_win = vim.api.nvim_get_current_win()
+
+        vim.api.nvim_set_current_win(cur)
+    end
+    return M.prev_win
+end
 
 function M.Open(opts)
     if M.Visable() then
         return
     end
 
-    M.prev_focused_win = vim.api.nvim_get_current_win()
+    M.prev_win = vim.api.nvim_get_current_win()
 
     local tabpage = vim.api.nvim_get_current_tabpage()
     if not M.tabs[tabpage] then

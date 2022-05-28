@@ -13,11 +13,11 @@ local M = {
     action_info_win = nil,
 }
 
-function M.CR(node)
+function M.CR(node, renderer)
     if node and node.nodes then
-        return M.DirToggle(node)
+        return M.DirToggle(node, renderer)
     end
-    return M.EditFile(node)
+    return M.EditFile(node, renderer)
 end
 
 function M.OpenFileFunc(mode)
@@ -34,41 +34,30 @@ function M.OpenFileFunc(mode)
     end
 end
 
--- function M.GetPreviousWinnr()
---     local cur_winnr = vim.api.nvim_get_current_win()
-
---     vim.api.nvim_command("wincmd p")
---     local winnr = vim.api.nvim_get_current_win()
-
---     vim.api.nvim_set_current_win(cur_winnr)
-
---     return winnr
--- end
-
-function M.EditFile(node)
+function M.EditFile(node, renderer)
     if node.ftype == "link" and node.link_type ~= "file" or node.ftype ~= "file" then
         return
     end
 
-    vim.api.nvim_command("wincmd p")
+    vim.api.nvim_set_current_win(renderer.view:GetValidPrevWinid())
     pcall(vim.cmd, "edit "..vim.fn.fnameescape(node.ftype == "link" and node.link_to or node.abs_path))
 end
 
-function M.SplitFile(node)
+function M.SplitFile(node, renderer)
     if node.ftype == "link" and node.link_type ~= "file" or node.ftype ~= "file" then
         return
     end
 
-    vim.api.nvim_command("wincmd p")
+    vim.api.nvim_set_current_win(renderer.view.GetValidPrevWinid())
     pcall(vim.cmd, "sp "..vim.fn.fnameescape(node.ftype == "link" and node.link_to or node.abs_path))
 end
 
-function M.VSplitFile(node)
+function M.VSplitFile(node, renderer)
     if node.ftype == "link" and node.link_type ~= "file" or node.ftype ~= "file" then
         return
     end
 
-    vim.api.nvim_command("wincmd p")
+    vim.api.nvim_set_current_win(renderer.view.GetValidPrevWinid())
     pcall(vim.cmd, "vsp "..vim.fn.fnameescape(node.ftype == "link" and node.link_to or node.abs_path))
 end
 
