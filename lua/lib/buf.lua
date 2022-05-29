@@ -128,6 +128,7 @@ function M.DelBufByNamePrefix(prefix, force)
     nrs = {}
     for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
         bname = vim.api.nvim_buf_get_name(bufnr)
+        print("buf name: " .. bname)
         if string.find(bname, prefix) == 1 then
             table.insert(nrs, bufnr)
         end

@@ -235,6 +235,7 @@ function M.RemoveFile(node, renderer)
         rm_path = rm_path .. "/"
     end
 
+    print("del buf by name prefix: "..rm_path)
     buf.DelBufByNamePrefix(rm_path, true)
 
     node.parent:Load()
