@@ -36,3 +36,34 @@ func BufEnter(v *nvim.Nvim) func() {
         logger.Debug().Bool("Attached", attached).Int("Bufnr", int(buf)).Msg("AttachBuffer")
     }
 }
+
+func VimEnter(v *nvim.Nvim) func() {
+    return func() {
+        logger := common.GetLogger()
+        logger.Debug().Msg("before set keymaps")
+        opts := make(map[string]bool)
+        opts["noremap"] = true
+        opts["silent"] = true
+        opts["expr"] = true
+        err := v.SetKeyMap("i", "<cr>", 
+            `pumvisible() ? (complete_info(["selected"]).selected == -1 ? "<c-e><cr>" : "<c-y>") : "<cr>"`, 
+            opts,
+        )
+        logger.Debug().Msg("after set 1 keymap")
+        if err != nil {
+            logger.Fatal().Err(err).Msg("SetKeyMap")
+            return
+        }
+        err = v.SetKeyMap("i", "<tab>", `pumvisible() ? '<c-n>' : '<tab>'`, opts)
+        if err != nil {
+            logger.Fatal().Err(err).Msg("SetKeyMap")
+            return
+        }
+        err = v.SetKeyMap("i", "<s-tab>", `pumvisible() ? '<c-p>' : '<bs>'`, opts)
+        if err != nil {
+            logger.Fatal().Err(err).Msg("SetKeyMap")
+            return
+        }
+        logger.Debug().Msg("after set keymaps")
+    }
+}

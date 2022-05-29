@@ -1,11 +1,13 @@
 package cmd
 
 import (
+    "context"
     "os"
     "log"
 
     "gvcmp/common"
     "gvcmp/handler"
+    "gvcmp/service"
 	"github.com/neovim/go-client/nvim"
 	"github.com/neovim/go-client/nvim/plugin"
 )
@@ -26,6 +28,14 @@ func (r *Run) Run() error {
         logger.Fatal().Err(err).Msg("NewNvim")
         return err
 	}
+
+    ctx, cancel := context.WithCancel(context.Background())
+    defer cancel()
+
+    cmpService := service.GetCompleteIns()
+    cmpService.Init(v)
+    go cmpService.Serve(ctx)
+
 	if err := handler.Register(plugin.New(v)); err != nil {
         logger.Fatal().Err(err).Msg("RegisterHandlers")
         return err

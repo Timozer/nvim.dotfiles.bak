@@ -97,21 +97,21 @@ local plugins = {
     lspkind = {
         'lspkind-nvim'
     },
-    nvim_cmp = {
-        'nvim-cmp',
-        -- opt = true,
-        -- event = { 'InsertEnter' },
-        after = 'lspkind-nvim',
-        requires = {
-            {'cmp_luasnip', after = 'LuaSnip'},
-            {'cmp-buffer', after = 'cmp_luasnip'},
-            {'cmp-nvim-lsp', after = 'cmp-buffer'},
-            {'cmp-path', after = 'cmp-nvim-lsp'},
-            {'cmp-cmdline', after = 'cmp-path' },
-            {'lspkind-nvim'},
-        },
-        config = require('plugins.config.nvim_cmp').init
-    },
+    -- nvim_cmp = {
+    --     'nvim-cmp',
+    --     -- opt = true,
+    --     -- event = { 'InsertEnter' },
+    --     after = 'lspkind-nvim',
+    --     requires = {
+    --         {'cmp_luasnip', after = 'LuaSnip'},
+    --         {'cmp-buffer', after = 'cmp_luasnip'},
+    --         {'cmp-nvim-lsp', after = 'cmp-buffer'},
+    --         {'cmp-path', after = 'cmp-nvim-lsp'},
+    --         {'cmp-cmdline', after = 'cmp-path' },
+    --         {'lspkind-nvim'},
+    --     },
+    --     config = require('plugins.config.nvim_cmp').init
+    -- },
     nvim_autopairs = {
         'nvim-autopairs',
         opt = true,

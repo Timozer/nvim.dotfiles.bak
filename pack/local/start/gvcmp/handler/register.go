@@ -11,7 +11,6 @@ func Register(p *plugin.Plugin) error {
     // Commands
     p.HandleCommand(&plugin.CommandOptions{Name: "ExCmd", NArgs: "?", Bang: true, Eval: "[getcwd(),bufname()]"},
     func(args []string, bang bool, eval *cmdEvalExample) {
-        // drint("called command ExCmd")
         logger.Debug().Msg("called command ExCmd")
         exCmd(p, args, bang, eval)
     })
@@ -19,6 +18,7 @@ func Register(p *plugin.Plugin) error {
     // AutoCommands
     p.HandleAutocmd(&plugin.AutocmdOptions{Event: "BufEnter", Group: "GVCmp", Pattern: "*"}, BufEnter(p.Nvim))
     p.HandleAutocmd(&plugin.AutocmdOptions{Event: "InsertEnter", Group: "GVCmp", Pattern: "*"}, BufEnter(p.Nvim))
+    p.HandleAutocmd(&plugin.AutocmdOptions{Event: "VimEnter", Group: "GVCmp", Pattern: "*"}, VimEnter(p.Nvim))
     p.HandleAutocmd(&plugin.AutocmdOptions{Event: "BufAdd", Group: "ExmplNvGoClientGrp", Pattern: "*", Eval: "*"},
     func(eval *autocmdEvalExample) {
         logger.Debug().Str("CWD", eval.Cwd).Msg("CWD")
@@ -65,16 +65,10 @@ func Register(p *plugin.Plugin) error {
         return []string{"abc", "def", "ghi", "jkl"}, nil
     })
 
-    // Buffer events (see :h api-buffer-updates for more); these special p.Handle events are
-    // paired with the call to AttachBuffer in TurnOnEvents below
-    p.Handle("nvim_buf_lines_event",
-    func(e ...interface{}) {
-        logger.Debug().Interface("Event", e).Msg("triggered buf lines event")
-    })
-    p.Handle("nvim_buf_changedtick_event",
-    func(e ...interface{}) {
-        logger.Debug().Interface("Event", e).Msg("triggerd changed tick event")
-    })
+    p.Handle("nvim_buf_lines_event", BufLinesEventHandler)
+    p.Handle("nvim_buf_changedtick_event", BufChangedTickEventHandler)
+
+    logger.Debug().Msg("after register handlers")
     return nil
 }
 
