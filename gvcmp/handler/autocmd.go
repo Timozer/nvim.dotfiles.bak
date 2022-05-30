@@ -54,12 +54,12 @@ func VimEnter(v *nvim.Nvim) func() {
             logger.Fatal().Err(err).Msg("SetKeyMap")
             return
         }
-        err = v.SetKeyMap("i", "<tab>", `pumvisible() ? '<c-n>' : '<tab>'`, opts)
+        err = v.SetKeyMap("i", "<tab>", `pumvisible() ? '<C-n>' : '<tab>'`, opts)
         if err != nil {
             logger.Fatal().Err(err).Msg("SetKeyMap")
             return
         }
-        err = v.SetKeyMap("i", "<s-tab>", `pumvisible() ? '<c-p>' : '<bs>'`, opts)
+        err = v.SetKeyMap("i", "<s-tab>", `pumvisible() ? '<C-p>' : '<bs>'`, opts)
         if err != nil {
             logger.Fatal().Err(err).Msg("SetKeyMap")
             return

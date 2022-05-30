@@ -38,7 +38,7 @@ endfunction
 
 function! s:StartGVCmp(host) abort
 `
-    manifest += "    return jobstart(['/home/zhenyu/.config/nvim/pack/local/start/gvcmp/gvcmp', 'run'], {"
+    manifest += "    return jobstart(['/home/zhenyu/.config/nvim/gvcmp/gvcmp', 'run'], {"
     manifest += `
         \ 'rpc': v:true, 
         \ 'on_stderr': function('s:panic')

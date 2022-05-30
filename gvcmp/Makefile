@@ -6,6 +6,7 @@ build:
 
 manifest:
 	./gvcmp manifest -H gvcmp -f "plugin/gvcmp.vim"
+	cp -rf plugin/gvcmp.vim ../plugin/gvcmp.vim
 
 clean:
 	rm -rf gvcmp logs

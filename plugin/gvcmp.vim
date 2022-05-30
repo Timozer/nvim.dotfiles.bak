@@ -9,7 +9,7 @@ function! s:panic(ch, data, ...) abort
 endfunction
 
 function! s:StartGVCmp(host) abort
-    return jobstart(['/home/zhenyu/.config/nvim/pack/local/start/gvcmp/gvcmp', 'run'], {
+    return jobstart(['/home/zhenyu/.config/nvim/gvcmp/gvcmp', 'run'], {
         \ 'rpc': v:true, 
         \ 'on_stderr': function('s:panic')
         \ })

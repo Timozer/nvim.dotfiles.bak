@@ -202,18 +202,18 @@ local basic_maps = {
 
 utils:bind_keymaps(basic_maps)
 
-local plugins = require('core.plugins')
+-- local plugins = require('core.plugins')
 
-local all_plgs = require('plugins')
+-- local all_plgs = require('plugins')
 
-plugins:load_plugins(all_plgs)
+-- plugins:load_plugins(all_plgs)
 
-for plugin, _ in pairs(all_plgs) do
-    keymapfile = vim.fn.stdpath('config')..'/lua/plugins/keymap/'..plugin..'.lua'
-    if (utils:file_exists(keymapfile)) then
-        utils:bind_keymaps(require('plugins.keymap.'..plugin))
-    end
-end
+-- for plugin, _ in pairs(all_plgs) do
+  --   keymapfile = vim.fn.stdpath('config')..'/lua/plugins/keymap/'..plugin..'.lua'
+    -- if (utils:file_exists(keymapfile)) then
+      --   utils:bind_keymaps(require('plugins.keymap.'..plugin))
+    -- end
+-- end
 
 require('ctrlp_files').setup()
 require('core.ctrlp').list_extensions()
