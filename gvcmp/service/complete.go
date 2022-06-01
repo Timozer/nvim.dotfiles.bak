@@ -4,6 +4,7 @@ import (
     "context"
     "fmt"
     "sync"
+    "os"
 
     "gvcmp/common"
 	"github.com/neovim/go-client/nvim"
@@ -93,8 +94,23 @@ type CompleteContext struct {
     LineCount int
 }
 
+func ReverseBytes(src []byte) []byte {
+    length := len(src)
+    ret := make([]byte, len(src))
+    for i := 0; i < length; i++ {
+        ret[i] = src[length - 1 - i]
+    }
+    return ret
+}
+
 func (c *Complete) ProcessEvent(e *nvim.BufLinesEvent) error {
     logger := common.GetLogger()
+    defer func() {
+        if p := recover(); p != nil {
+            logger.Error().Msg(fmt.Sprintf("%v\n", p))
+            os.Exit(1)
+        }
+    }()
     logger.Info().Msg("ProcessEvent Start")
 
     mode := nvim.Mode{}
@@ -130,13 +146,45 @@ func (c *Complete) ProcessEvent(e *nvim.BufLinesEvent) error {
     line_before := line[:ctx.Cursor[1]]
     line_after := line[ctx.Cursor[1]:]
 
+    before := make([]byte, 0)
+    for i := len(line_before) - 1; i >= 0; i-- {
+        if common.IsSpace(line_before[i]) {
+            break
+        }
+        before = append(before, line_before[i])
+    }
+    before = ReverseBytes(before)
+    startCol := len(line_before) - len(before)
+
+    after := make([]byte, 0)
+    for i := 0; i < len(line_after); i++ {
+        if common.IsSpace(line_after[i]) {
+            break
+        }
+        after = append(after, line_after[i])
+    }
+    endCol := len(line_before) + len(after)
+
+    logger.Debug().Str("BeforeStr", string(before)).
+        Str("AfterStr", string(after)).Int("StartCol", startCol).
+        Int("EndCol", endCol).Msg("Complete")
+
+    if len(before) < 2 {
+        return nil
+    }
+
     if pum_visible, _ := infos["pum_visible"].(int64); pum_visible == 1 {
         return nil
     }
 
     if mode.Mode[0] == 'i' && (infos["mode"] == "" || infos["mode"] == "eval" ||
         infos["mode"] == "function" || infos["mode"] == "ctrl_x") {
-        c.nvim.Call("complete", nil, ctx.Cursor[1], []string{"Jan", "Feb", "Mar", "Apr", "May"})
+        words := GetBufferIns().GetBufWords(e.Buffer)
+        logger.Debug().Int("Bufnr", int(e.Buffer)).Interface("Words", words).Msg("Complete")
+        if words == nil || len(words) < 1 {
+            return nil
+        }
+        c.nvim.Call("complete", nil, startCol, words)
     }
     return nil
 }

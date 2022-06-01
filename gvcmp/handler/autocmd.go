@@ -2,6 +2,7 @@ package handler
 
 import (
     "gvcmp/common"
+    "gvcmp/service"
 	"github.com/neovim/go-client/nvim"
 )
 
@@ -34,6 +35,8 @@ func BufEnter(v *nvim.Nvim) func() {
             return
         }
         logger.Debug().Bool("Attached", attached).Int("Bufnr", int(buf)).Msg("AttachBuffer")
+
+        service.GetBufferIns().SendEvent(&service.Event{Type: "BufEnter", Data: buf})
     }
 }
 

@@ -6,6 +6,7 @@ require (
 	github.com/alecthomas/kong v0.5.0
 	github.com/neovim/go-client v1.2.1
 	github.com/rs/zerolog v1.26.1
+	github.com/yanyiwu/gojieba v1.1.2
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 )
 

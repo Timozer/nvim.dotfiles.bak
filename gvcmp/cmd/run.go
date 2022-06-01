@@ -36,6 +36,10 @@ func (r *Run) Run() error {
     cmpService.Init(v)
     go cmpService.Serve(ctx)
 
+    bufService := service.GetBufferIns()
+    bufService.Init(v)
+    go bufService.Serve(ctx)
+
 	if err := handler.Register(plugin.New(v)); err != nil {
         logger.Fatal().Err(err).Msg("RegisterHandlers")
         return err
