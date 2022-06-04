@@ -215,5 +215,25 @@ utils:bind_keymaps(basic_maps)
     -- end
 -- end
 
+vim.g.gpm_config = {
+	log = {
+		dir = vim.fn.stdpath("config") .. "/.cache/gpm/logs/",
+		level = "debug", -- debug | info
+	},
+	plugin = {
+		install_path = vim.fn.stdpath("config") .. "/pack/gpm/",
+		compile_path = vim.fn.stdpath("config") .. "/plugin/gpm_compiled.lua",
+		plugins = {
+			nvim_lspconfig = {
+				type = "git", -- git | local | http
+				path = "",
+				opt = true,
+				event = {'BufReadPre'},
+				setup = function() print("hello") end,
+			}
+		}
+	}
+}
+
 require('ctrlp_files').setup()
 require('core.ctrlp').list_extensions()
