@@ -176,28 +176,6 @@ local basic_maps = {
 			expr = false,
 		}
 	},
-	-- {
-	-- 	mode = "n",
-	-- 	key = "<C-Up>",
-	-- 	cmd = ":resize -10<CR>",
-	-- 	options = {
-	-- 		silent = false,
-	-- 		noremap = true,
-	-- 		nowait = false,
-	-- 		expr = false,
-	-- 	}
-	-- },
-	-- {
-	-- 	mode = "n",
-	-- 	key = "<C-Down>",
-	-- 	cmd = ":resize +10<CR>",
-	-- 	options = {
-	-- 		silent = false,
-	-- 		noremap = true,
-	-- 		nowait = false,
-	-- 		expr = false,
-	-- 	}
-	-- },
 }
 
 utils:bind_keymaps(basic_maps)
@@ -221,6 +199,22 @@ vim.g.gpm_config = {
 		compile_path = vim.fn.stdpath("config") .. "/plugin/gpm_compiled.lua",
 		plugins = {
 			{
+				name = "edge",
+				type = "git",
+				path = "https://github.com/sainnhe/edge",
+				opt = false,
+				setup = function()
+					vim.cmd [[set background=dark]]
+					vim.g.edge_style = "aura"
+					vim.g.edge_enable_italic = 1
+					vim.g.edge_disable_italic_comment = 1
+					vim.g.edge_show_eob = 1
+					vim.g.edge_better_performance = 1
+
+					vim.cmd [[ colorscheme edge ]]
+				end
+			},
+			{
 				name = "nvim-lspconfig",
 				type = "git", -- git | local | http
 				path = "https://github.com/neovim/nvim-lspconfig",
@@ -229,118 +223,54 @@ vim.g.gpm_config = {
 					{ name = 'BufReadPre', pattern = "*" }
 				},
 				setup = function() 
-					local maps = {
-						{
-							mode = "n",
-							key = "gD",
-							cmd = ":lua vim.lsp.buf.declaration()<cr>",
-							options = {
-								noremap = true,
-								silent = true,
-							}
-						},
-						{
-							mode = "n",
-							key = "gt",
-							cmd = ":lua vim.lsp.buf.type_definition()<cr>",
-							options = {
-								noremap = true,
-								silent = true,
-							}
-						},
-						{
-							mode = "n",
-							key = "gd",
-							cmd = ":lua vim.lsp.buf.definition()<cr>",
-							options = {
-								noremap = true,
-								silent = true,
-							}
-						},
-						{
-							mode = "n",
-							key = "gi",
-							cmd = ":lua vim.lsp.buf.implementation()<cr>",
-							options = {
-								noremap = true,
-								silent = true,
-							}
-						},
-						{
-							mode = "n",
-							key = "gr",
-							cmd = ":lua vim.lsp.buf.references()<cr>",
-							options = {
-								noremap = true,
-								silent = true,
-							}
-						},
-						{
-							mode = "n",
-							key = "[d",
-							cmd = ":lua vim.diagnostic.goto_prev()<cr>",
-							options = {
-								noremap = true,
-								silent = true,
-							}
-						},
-						{
-							mode = "n",
-							key = "]d",
-							cmd = ":lua vim.diagnostic.goto_next()<cr>",
-							options = {
-								noremap = true,
-								silent = true,
-							}
-						},
-						{
-							mode = "n",
-							key = "K",
-							cmd = ":lua vim.lsp.buf.hover()<cr>",
-							options = {
-								noremap = true,
-								silent = true,
-							}
-						},
-						{
-							mode = "n",
-							key = "<C-k>",
-							cmd = ":lua vim.lsp.buf.signature_help()<cr>",
-							options = {
-								noremap = true,
-								silent = true,
-							}
-						},
-						{
-							mode = "n",
-							key = "<leader>ca",
-							cmd = ":lua vim.lsp.buf.code_action()<cr>",
-							options = {
-								noremap = true,
-								silent = true,
-							}
-						},
-						{
-							mode = "n",
-							key = "<leader>dl",
-							cmd = ":lua vim.diagnostic.setloclist()<cr>",
-							options = {
-								noremap = true,
-								silent = true,
-							}
-						},
-						{
-							mode = "n",
-							key = "<S-F6>",
-							cmd = ":lua vim.lsp.buf.rename()<cr>",
-							options = {
-								noremap = true,
-								silent = true,
-							}
-						},
+                    vim.api.nvim_set_keymap("n", "gD", ":lua vim.lsp.buf.declaration()<cr>", {noremap=true, silent=true})
+                    vim.api.nvim_set_keymap("n", "gt", ":lua vim.lsp.buf.type_definition()<cr>", {noremap=true, silent=true})
+                    vim.api.nvim_set_keymap("n", "gd", ":lua vim.lsp.buf.definition()<cr>", {noremap=true, silent=true})
+                    vim.api.nvim_set_keymap("n", "gi", ":lua vim.lsp.buf.implementation()<cr>", {noremap=true, silent=true})
+                    vim.api.nvim_set_keymap("n", "gr", ":lua vim.lsp.buf.references()<cr>", {noremap=true, silent=true})
+                    vim.api.nvim_set_keymap("n", "[d", ":lua vim.diagnostic.goto_prev()<cr>", {noremap=true, silent=true})
+                    vim.api.nvim_set_keymap("n", "]d", ":lua vim.diagnostic.goto_next()<cr>", {noremap=true, silent=true})
+                    vim.api.nvim_set_keymap("n", "K", ":lua vim.lsp.buf.hover()<cr>", {noremap=true, silent=true})
+                    vim.api.nvim_set_keymap("n", "<C-k>", ":lua vim.lsp.buf.signature_help()<cr>", {noremap=true, silent=true})
+                    vim.api.nvim_set_keymap("n", "<leader>ca", ":lua vim.lsp.buf.code_action()<cr>", {noremap=true, silent=true})
+                    vim.api.nvim_set_keymap("n", "<leader>dl", ":lua vim.diagnostic.setloclist()<cr>", {noremap=true, silent=true})
+                    vim.api.nvim_set_keymap("n", "<S-F6>", ":lua vim.lsp.buf.rename()<cr>", {noremap=true, silent=true})
+
+					local utils     = require('core.utils')
+					local lspconfig = require('lspconfig')
+					local cpb = vim.lsp.protocol.make_client_capabilities()
+
+					cpb.textDocument.completion.completionItem.documentationFormat = {
+						"markdown", "plaintext"
 					}
-					for _, item in ipairs(maps) do
-						vim.api.nvim_set_keymap(item.mode, item.key, item.cmd, item.options)
+					cpb.textDocument.completion.completionItem.snippetSupport = true
+					cpb.textDocument.completion.completionItem.preselectSupport = true
+					cpb.textDocument.completion.completionItem.insertReplaceSupport = true
+					cpb.textDocument.completion.completionItem.labelDetailsSupport = true
+					cpb.textDocument.completion.completionItem.deprecatedSupport = true
+					cpb.textDocument.completion.completionItem.commitCharactersSupport = true
+					cpb.textDocument.completion.completionItem.tagSupport = {
+						valueSet = {1}
+					}
+					cpb.textDocument.completion.completionItem.resolveSupport = {
+						properties = {"documentation", "detail", "additionalTextEdits"}
+					}
+
+					local data = utils:file_read(vim.fn.stdpath('config')..'/settings.json')
+					local settings = vim.json.decode(data)
+					local root = vim.fn.expand(settings.lsp.root)
+					for server, cfg in pairs(settings.lsp.servers) do
+						if cfg.enable then
+							cfg.opts.capabilities = cpb
+							cfg.opts.flags = { debounce_text_changes = 500 }
+							if cfg.opts['cmd'] then
+								if utils:startswith(cfg.opts.cmd[1], '#') then
+									cfg.opts.cmd[1] = root..'/'..server..'/'..string.sub(cfg.opts.cmd[1], 2)
+								end
+							end
+                            print(server .. " lsp setup " .. vim.inspect(cfg.opts))
+							lspconfig[server].setup(cfg.opts)
+						end
 					end
 				end,
 			},
