@@ -1,5 +1,10 @@
 package cmn
 
+import (
+	"errors"
+	"os"
+)
+
 func IsSpace(c byte) bool {
 	switch c {
 	case '\t', '\n', '\v', '\f', '\r', ' ', 0x85, 0xA0:
@@ -7,4 +12,23 @@ func IsSpace(c byte) bool {
 	default:
 		return false
 	}
+}
+
+func FileExists(fpath string) (bool, error) {
+	_, err := os.Stat(fpath)
+	if err == nil {
+		return true, nil
+	}
+	if errors.Is(err, os.ErrNotExist) {
+		return false, nil
+	}
+	return false, err
+}
+
+func CheckAndCreateDir(dir string) error {
+	_, err := os.Stat(dir)
+	if err == nil || !errors.Is(err, os.ErrNotExist) {
+		return err
+	}
+	return os.MkdirAll(dir, os.ModePerm)
 }

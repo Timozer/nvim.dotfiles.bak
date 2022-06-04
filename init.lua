@@ -224,12 +224,19 @@ vim.g.gpm_config = {
 		install_path = vim.fn.stdpath("config") .. "/pack/gpm/",
 		compile_path = vim.fn.stdpath("config") .. "/plugin/gpm_compiled.lua",
 		plugins = {
-			nvim_lspconfig = {
+			{
+				name = "nvim_lspconfig",
 				type = "git", -- git | local | http
-				path = "",
+				path = "https://github.com/neovim/nvim-lspconfig",
 				opt = true,
 				event = {'BufReadPre'},
 				setup = function() print("hello") end,
+			},
+			{
+				name = "vim_easy_aligh",
+				type = "git",
+				path = "https://github.com/junegunn/vim-easy-align",
+				opt = true,
 			}
 		}
 	}

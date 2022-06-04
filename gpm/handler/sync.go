@@ -1,15 +1,20 @@
 package handler
 
 import (
+	"context"
 	"fmt"
 	"gpm/cmn"
+	"gpm/types"
 	"gpm/ui"
+	"path/filepath"
+	"sync"
+	"time"
 
 	"github.com/neovim/go-client/nvim"
 )
 
-func GetConfig(v *nvim.Nvim) (*cmn.Config, error) {
-	cfg := &cmn.Config{}
+func GetConfig(v *nvim.Nvim) (*types.Config, error) {
+	cfg := &types.Config{}
 	err := v.Var("gpm_config", cfg)
 	return cfg, err
 }
@@ -23,7 +28,7 @@ var (
 `
 )
 
-func OpenInfoBox(v *nvim.Nvim) (*ui.Box, error) {
+func OpenInfoBox(v *nvim.Nvim) (*ui.ListBox, error) {
 	size, err := cmn.GetVimSize(v)
 	if err != nil {
 		return nil, err
@@ -38,31 +43,72 @@ func OpenInfoBox(v *nvim.Nvim) (*ui.Box, error) {
 		Y: float64(size.Height) / 4,
 	}
 
-	box := ui.NewBox(v, &bpos, &bsize)
+	box := ui.NewListBox(v, &bpos, &bsize)
 	err = box.Open(true)
 	return box, err
 }
 
 func Sync(v *nvim.Nvim) func() {
 	return func() {
-		_, err := GetConfig(v)
+		cfg, err := GetConfig(v)
 		if err != nil {
-			v.Notify(fmt.Sprintf("gpm sync fail, err: %s", err), nvim.LogErrorLevel, map[string]interface{}{})
+			cmn.NvimNotifyError(v, fmt.Sprintf("gpm sync fail, err: %s", err))
 			return
 		}
-		// v.Notify(fmt.Sprintf("gpm config: %v", cfg), nvim.LogInfoLevel, map[string]interface{}{})
-		// err = v.ExecLua(luaFunc, nil)
-		// if err != nil {
-		// 	v.Notify(fmt.Sprintf("gpm exec lua fail, err: %s", err), nvim.LogErrorLevel, map[string]interface{}{})
-		// 	return
-		// }
-		iBox, err := OpenInfoBox(v)
+
+		err = cmn.CheckAndCreateDir(cfg.Plugin.InstallPath)
 		if err != nil {
-			v.Notify(fmt.Sprintf("open info box fail, err: %s", err), nvim.LogErrorLevel, make(map[string]interface{}))
+			cmn.NvimNotifyError(v, fmt.Sprintf("create plugin install dir fail, err: %s", err))
+			return
 		}
-		err = iBox.SetTitle("同步插件")
+
+		err = cmn.CheckAndCreateDir(filepath.Dir(cfg.Plugin.CompilePath))
 		if err != nil {
-			v.Notify(fmt.Sprintf("set title fail, err: %s", err), nvim.LogErrorLevel, make(map[string]interface{}))
+			cmn.NvimNotifyError(v, fmt.Sprintf("create plugin compile dir fail, err: %s", err))
+			return
+		}
+
+		lbox, err := OpenInfoBox(v)
+		if err != nil {
+			cmn.NvimNotifyError(v, fmt.Sprintf("open info box fail, err: %s", err))
+			return
+		}
+
+		for _, plugin := range cfg.Plugin.Plugins {
+			err = lbox.AddItem(plugin)
+			if err != nil {
+				cmn.NvimNotifyError(v, fmt.Sprintf("add item fail fail, err: %s", err))
+				return
+			}
+		}
+
+		wg := sync.WaitGroup{}
+		for _, p := range cfg.Plugin.Plugins {
+			wg.Add(1)
+			go func(plugin *types.Plugin) {
+				defer func() {
+					wg.Done()
+				}()
+				plugin.Sync(cfg.Plugin.InstallPath)
+			}(p)
+		}
+
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+		go UpdateInfoBox(ctx, lbox)
+
+		wg.Wait()
+	}
+}
+
+func UpdateInfoBox(ctx context.Context, lbox *ui.ListBox) {
+	tick := time.NewTicker(time.Millisecond * 300)
+	for {
+		select {
+		case <-tick.C:
+			lbox.Redraw()
+		case <-ctx.Done():
+			return
 		}
 	}
 }
