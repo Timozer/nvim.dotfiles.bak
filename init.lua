@@ -202,11 +202,7 @@ local basic_maps = {
 
 utils:bind_keymaps(basic_maps)
 
--- local plugins = require('core.plugins')
-
 -- local all_plgs = require('plugins')
-
--- plugins:load_plugins(all_plgs)
 
 -- for plugin, _ in pairs(all_plgs) do
   --   keymapfile = vim.fn.stdpath('config')..'/lua/plugins/keymap/'..plugin..'.lua'
@@ -225,18 +221,140 @@ vim.g.gpm_config = {
 		compile_path = vim.fn.stdpath("config") .. "/plugin/gpm_compiled.lua",
 		plugins = {
 			{
-				name = "nvim_lspconfig",
+				name = "nvim-lspconfig",
 				type = "git", -- git | local | http
 				path = "https://github.com/neovim/nvim-lspconfig",
-				opt = true,
-				event = {'BufReadPre'},
-				setup = function() print("hello") end,
+				opt = false,
+				event = {
+					{ name = 'BufReadPre', pattern = "*" }
+				},
+				setup = function() 
+					local maps = {
+						{
+							mode = "n",
+							key = "gD",
+							cmd = ":lua vim.lsp.buf.declaration()<cr>",
+							options = {
+								noremap = true,
+								silent = true,
+							}
+						},
+						{
+							mode = "n",
+							key = "gt",
+							cmd = ":lua vim.lsp.buf.type_definition()<cr>",
+							options = {
+								noremap = true,
+								silent = true,
+							}
+						},
+						{
+							mode = "n",
+							key = "gd",
+							cmd = ":lua vim.lsp.buf.definition()<cr>",
+							options = {
+								noremap = true,
+								silent = true,
+							}
+						},
+						{
+							mode = "n",
+							key = "gi",
+							cmd = ":lua vim.lsp.buf.implementation()<cr>",
+							options = {
+								noremap = true,
+								silent = true,
+							}
+						},
+						{
+							mode = "n",
+							key = "gr",
+							cmd = ":lua vim.lsp.buf.references()<cr>",
+							options = {
+								noremap = true,
+								silent = true,
+							}
+						},
+						{
+							mode = "n",
+							key = "[d",
+							cmd = ":lua vim.diagnostic.goto_prev()<cr>",
+							options = {
+								noremap = true,
+								silent = true,
+							}
+						},
+						{
+							mode = "n",
+							key = "]d",
+							cmd = ":lua vim.diagnostic.goto_next()<cr>",
+							options = {
+								noremap = true,
+								silent = true,
+							}
+						},
+						{
+							mode = "n",
+							key = "K",
+							cmd = ":lua vim.lsp.buf.hover()<cr>",
+							options = {
+								noremap = true,
+								silent = true,
+							}
+						},
+						{
+							mode = "n",
+							key = "<C-k>",
+							cmd = ":lua vim.lsp.buf.signature_help()<cr>",
+							options = {
+								noremap = true,
+								silent = true,
+							}
+						},
+						{
+							mode = "n",
+							key = "<leader>ca",
+							cmd = ":lua vim.lsp.buf.code_action()<cr>",
+							options = {
+								noremap = true,
+								silent = true,
+							}
+						},
+						{
+							mode = "n",
+							key = "<leader>dl",
+							cmd = ":lua vim.diagnostic.setloclist()<cr>",
+							options = {
+								noremap = true,
+								silent = true,
+							}
+						},
+						{
+							mode = "n",
+							key = "<S-F6>",
+							cmd = ":lua vim.lsp.buf.rename()<cr>",
+							options = {
+								noremap = true,
+								silent = true,
+							}
+						},
+					}
+					for _, item in ipairs(maps) do
+						vim.api.nvim_set_keymap(item.mode, item.key, item.cmd, item.options)
+					end
+				end,
 			},
 			{
-				name = "vim_easy_aligh",
+				name = "vim-easy-align",
 				type = "git",
 				path = "https://github.com/junegunn/vim-easy-align",
-				opt = true,
+				opt = false,
+				setup = function()
+					vim.api.nvim_set_keymap("v", "<Enter>", ":EasyAlign<cr>", {noremap=false})
+				end,
+				event = {
+					{ name = 'BurReadPre', pattern = "*" }
+				}
 			}
 		}
 	}

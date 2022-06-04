@@ -6,6 +6,7 @@ import (
 	"gpm/cmn"
 	"gpm/types"
 	"gpm/ui"
+	"io/ioutil"
 	"path/filepath"
 	"sync"
 	"time"
@@ -77,7 +78,7 @@ func Sync(v *nvim.Nvim) func() {
 		for _, plugin := range cfg.Plugin.Plugins {
 			err = lbox.AddItem(plugin)
 			if err != nil {
-				cmn.NvimNotifyError(v, fmt.Sprintf("add item fail fail, err: %s", err))
+				cmn.NvimNotifyError(v, fmt.Sprintf("add item fail, err: %s", err))
 				return
 			}
 		}
@@ -98,6 +99,9 @@ func Sync(v *nvim.Nvim) func() {
 		go UpdateInfoBox(ctx, lbox)
 
 		wg.Wait()
+
+		MakeLoader(v, cfg.Plugin.Plugins, cfg.Plugin.CompilePath)
+
 	}
 }
 
@@ -110,5 +114,99 @@ func UpdateInfoBox(ctx context.Context, lbox *ui.ListBox) {
 		case <-ctx.Done():
 			return
 		}
+	}
+}
+
+func MakeLuaLoadString(v *nvim.Nvim, plugin *types.Plugin) string {
+	makeLoadStr := `
+	function makeLoadStr(...)
+		local args = { ... }
+		local plugin = args[1]
+		for _, item in ipairs(vim.g.gpm_config["plugin"]["plugins"]) do
+			if item.name == plugin.name then
+				if type(item.setup) == 'function' then
+					return vim.inspect(string.dump(item.setup, true))
+				else
+					return "\"\""
+				end
+			end
+		end
+		return "\"\""
+	end
+	return makeLoadStr(...)
+	`
+	bytecode := ""
+	err := v.ExecLua(makeLoadStr, &bytecode, plugin)
+	if err != nil {
+		cmn.NvimNotifyError(v, err.Error())
+	}
+	return bytecode
+}
+
+func MakeLoader(v *nvim.Nvim, plugins []*types.Plugin, output string) {
+	luastr := `
+if vim.g.gpm_plugins_loaded and vim.g.gpm_plugins_loaded == 1 then
+    return
+end
+
+if vim.api.nvim_call_function('has', {'nvim-0.7'}) ~= 1 then
+    vim.fn.nvim_out_write("gpm plugins load requires at least nvim-0.7")
+    return
+end
+
+vim.g.gpm_lugins_loaded = 1
+
+local function loadStr(s)
+  local success, result = pcall(loadstring(s))
+  if not success then
+    vim.schedule(function()
+      vim.api.nvim_notify('Error running loadStr ' .. s .. ' result ' .. result, vim.log.levels.ERROR, {})
+    end)
+  end
+  return result
+end
+
+local no_errors, err_msg = pcall(function()
+`
+	rtps := []string{}
+	events := make(map[string][]types.Event)
+	for _, p := range plugins {
+		if p.Disable {
+			continue
+		}
+		rtps = append(rtps, p.InstallPath)
+
+		luastr += fmt.Sprintf("\tvim.cmd [[ packadd %s ]]\n", p.Name)
+		setupStr := fmt.Sprintf("\tloadStr(%s)\n", MakeLuaLoadString(v, p))
+		cmn.NvimNotifyInfo(v, setupStr)
+		luastr += setupStr
+
+		events[p.Name] = p.Event
+	}
+	luastr += `
+	vim.cmd [[ augroup gpm_aucmds ]]
+	vim.cmd [[ au! ]]
+`
+	// for k, v := range events {
+	// 	for i := range v {
+	// 		pattern := v[i].Pattern
+	// 		if len(pattern) == 0 {
+	// 			pattern = "*"
+	// 		}
+	// 		luastr += fmt.Sprintf("\tvim.cmd [[ au %s %s ++once lua require(")
+	// 	}
+	// }
+	luastr += `
+	vim.cmd [[ augroup END ]]
+end)
+
+if not no_errors then
+	vim.api.nvim_notify(err_msg, vim.log.levels.ERROR, {})
+end
+	`
+
+	err := ioutil.WriteFile(output, []byte(luastr), 0644)
+	if err != nil {
+		cmn.NvimNotifyError(v, err.Error())
 	}
 }

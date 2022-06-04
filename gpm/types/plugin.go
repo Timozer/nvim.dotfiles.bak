@@ -11,12 +11,20 @@ import (
 	"github.com/go-git/go-git/v5"
 )
 
+type Event struct {
+	Name    string `msgpack:"name"`
+	Pattern string `msgpack:"pattern"`
+}
+
 type Plugin struct {
-	Name  string   `msgpack:"name"`
-	Type  string   `msgpack:"type"`
-	Path  string   `msgpack:"path"`
-	Opt   bool     `msgpack:"opt"`
-	Event []string `msgpack:"event"`
+	Name    string  `msgpack:"name"`
+	Type    string  `msgpack:"type"`
+	Path    string  `msgpack:"path"`
+	Opt     bool    `msgpack:"opt"`
+	Event   []Event `msgpack:"event"`
+	Disable bool    `msgpack:"disable"`
+
+	InstallPath string `msgpack:"-"`
 
 	status string
 }
@@ -31,6 +39,7 @@ func (p *Plugin) SyncGit(dst string) {
 	dst = filepath.Join(dst, filepath.Base(p.Path))
 	dst = strings.TrimSuffix(dst, ".git")
 	time.Sleep(3 * time.Second)
+	p.InstallPath = dst
 	p.status = "checking install dir..."
 	exist, err := cmn.FileExists(dst)
 	if err != nil {
