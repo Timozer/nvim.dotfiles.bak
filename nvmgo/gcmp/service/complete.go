@@ -3,9 +3,9 @@ package service
 import (
 	"context"
 	"fmt"
-	"gcmp/types"
 	"nvmgo/lib"
 	"os"
+	"path/filepath"
 	"sort"
 	"sync"
 
@@ -31,11 +31,10 @@ func GetCompleteIns() *Complete {
 	return gCompleteIns
 }
 
-func (c *Complete) Init(v *nvim.Nvim, cfg *types.Config) error {
+func (c *Complete) Init(v *nvim.Nvim) error {
 	c.nvim = v
-	c.config = cfg
 	c.eventChan = make(chan *nvim.BufLinesEvent, 1000)
-	c.logger = lib.NewLogger("service/complete.log", &c.config.Log)
+	c.logger = lib.NewLogger(filepath.Join(lib.GetProgramDir(), "service/complete.log"))
 	c.inited = true
 	return nil
 }

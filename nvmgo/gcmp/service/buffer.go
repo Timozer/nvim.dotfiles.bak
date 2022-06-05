@@ -3,9 +3,9 @@ package service
 import (
 	"context"
 	"fmt"
-	"gcmp/types"
 	"nvmgo/lib"
 	"os"
+	"path/filepath"
 	"strconv"
 	"sync"
 
@@ -96,14 +96,13 @@ func GetBufferIns() *Buffer {
 	return gBufferIns
 }
 
-func (b *Buffer) Init(v *nvim.Nvim, cfg *types.Config) error {
+func (b *Buffer) Init(v *nvim.Nvim) error {
 	b.nvim = v
-	b.config = cfg
 	b.words = make(map[nvim.Buffer]*BufferWords)
 	b.eventChan = make(chan *Event, 100)
 	b.eventHandlers = make(map[string]func(interface{}) error)
 	b.eventHandlers["BufLines"] = b.BufLines
-	b.logger = lib.NewLogger("service/buffer.log", &b.config.Log)
+	b.logger = lib.NewLogger(filepath.Join(lib.GetProgramDir(), "service/buffer.log"))
 	b.inited = true
 	return nil
 }

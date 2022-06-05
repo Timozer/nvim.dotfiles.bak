@@ -126,10 +126,6 @@ local M = {}
 function M.SetUp(opts)
     opts = opts or {}
     vim.g.gpm_config = {
-        log = {
-            dir = vim.fn.stdpath("config") .. "/.cache/gpm/logs/",
-            level = "debug", -- debug | info
-        },
         plugin = {
             install_path = vim.fn.stdpath("config") .. "/pack/",
             compile_path = vim.fn.stdpath("config") .. "/plugin/gpm_compiled.lua",
@@ -160,12 +156,6 @@ function M.SetUp(opts)
                 }
             }
         }
-    }
-    vim.g.gcmp_config = {
-        log = {
-            dir = vim.fn.stdpath("config") .. "/.cache/gcmp/logs/",
-            level = "debug", -- debug | info
-        },
     }
 end
 

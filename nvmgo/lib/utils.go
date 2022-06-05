@@ -40,3 +40,7 @@ func GetProgramPath() string {
 	path, _ := filepath.Abs(file)
 	return path
 }
+
+func GetProgramDir() string {
+	return filepath.Dir(GetProgramPath())
+}
