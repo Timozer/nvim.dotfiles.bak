@@ -1,18 +1,20 @@
 package main
 
 import (
-	"gcmp/cmd"
+	"gcmp/handler"
+
+	lnvim "nvmgo/lib/nvim"
 
 	"github.com/alecthomas/kong"
 )
 
 type CmdArgs struct {
-	Run      cmd.Run      `cmd:""`
-	Manifest cmd.Manifest `cmd:""`
+	Run      Run            `cmd:""`
+	Manifest lnvim.Manifest `cmd:""`
 }
 
 func main() {
 	cli := CmdArgs{}
 	ctx := kong.Parse(&cli)
-	ctx.FatalIfErrorf(ctx.Run())
+	ctx.FatalIfErrorf(ctx.Run(&lnvim.CmdContext{HandlerRegister: handler.Register}))
 }

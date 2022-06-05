@@ -3,6 +3,8 @@ package lib
 import (
 	"errors"
 	"os"
+	"os/exec"
+	"path/filepath"
 )
 
 func IsSpace(c byte) bool {
@@ -31,4 +33,10 @@ func CreateDirIfNotExist(dir string) error {
 		return err
 	}
 	return os.MkdirAll(dir, os.ModePerm)
+}
+
+func GetProgramPath() string {
+	file, _ := exec.LookPath(os.Args[0])
+	path, _ := filepath.Abs(file)
+	return path
 }

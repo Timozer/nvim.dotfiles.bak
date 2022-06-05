@@ -1,5 +1,5 @@
-
 if exists('g:gpm_loaded')
+
     finish
 endif
 let g:gpm_loaded = 1
@@ -9,7 +9,7 @@ function! s:panic(ch, data, ...) abort
 endfunction
 
 function! s:Start(host) abort
-    return jobstart(['/home/zhenyu/.config/nvim/gpm/gpm', 'run'], {
+    return jobstart(['/home/zhenyu/.config/nvim/nvmgo/gpm/gpm', 'run'], {
         \ 'rpc': v:true, 
         \ 'on_stderr': function('s:panic')
         \ })
