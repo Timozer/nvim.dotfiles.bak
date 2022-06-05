@@ -1,18 +1,24 @@
 local M = {}
 
 function M.SetUp()
-    vim.api.nvim_set_keymap("n", "gD", ":lua vim.lsp.buf.declaration()<cr>", {noremap=true, silent=true})
-    vim.api.nvim_set_keymap("n", "gt", ":lua vim.lsp.buf.type_definition()<cr>", {noremap=true, silent=true})
-    vim.api.nvim_set_keymap("n", "gd", ":lua vim.lsp.buf.definition()<cr>", {noremap=true, silent=true})
-    vim.api.nvim_set_keymap("n", "gi", ":lua vim.lsp.buf.implementation()<cr>", {noremap=true, silent=true})
-    vim.api.nvim_set_keymap("n", "gr", ":lua vim.lsp.buf.references()<cr>", {noremap=true, silent=true})
-    vim.api.nvim_set_keymap("n", "[d", ":lua vim.diagnostic.goto_prev()<cr>", {noremap=true, silent=true})
-    vim.api.nvim_set_keymap("n", "]d", ":lua vim.diagnostic.goto_next()<cr>", {noremap=true, silent=true})
-    vim.api.nvim_set_keymap("n", "K", ":lua vim.lsp.buf.hover()<cr>", {noremap=true, silent=true})
-    vim.api.nvim_set_keymap("n", "<C-k>", ":lua vim.lsp.buf.signature_help()<cr>", {noremap=true, silent=true})
-    vim.api.nvim_set_keymap("n", "<leader>ca", ":lua vim.lsp.buf.code_action()<cr>", {noremap=true, silent=true})
-    vim.api.nvim_set_keymap("n", "<leader>dl", ":lua vim.diagnostic.setloclist()<cr>", {noremap=true, silent=true})
-    vim.api.nvim_set_keymap("n", "<S-F6>", ":lua vim.lsp.buf.rename()<cr>", {noremap=true, silent=true})
+    local lsp_attach = function (client)
+        vim.api.nvim_buf_set_keymap(0, "n", "gD", ":lua vim.lsp.buf.declaration()<cr>", {noremap=true, silent=true})
+        vim.api.nvim_buf_set_keymap(0, "n", "gt", ":lua vim.lsp.buf.type_definition()<cr>", {noremap=true, silent=true})
+        vim.api.nvim_buf_set_keymap(0, "n", "gd", ":lua vim.lsp.buf.definition()<cr>", {noremap=true, silent=true})
+        vim.api.nvim_buf_set_keymap(0, "n", "gi", ":lua vim.lsp.buf.implementation()<cr>", {noremap=true, silent=true})
+        vim.api.nvim_buf_set_keymap(0, "n", "gr", ":lua vim.lsp.buf.references()<cr>", {noremap=true, silent=true})
+        vim.api.nvim_buf_set_keymap(0, "n", "[d", ":lua vim.diagnostic.goto_prev()<cr>", {noremap=true, silent=true})
+        vim.api.nvim_buf_set_keymap(0, "n", "]d", ":lua vim.diagnostic.goto_next()<cr>", {noremap=true, silent=true})
+        vim.api.nvim_buf_set_keymap(0, "n", "K", ":lua vim.lsp.buf.hover()<cr>", {noremap=true, silent=true})
+        vim.api.nvim_buf_set_keymap(0, "n", "<C-k>", ":lua vim.lsp.buf.signature_help()<cr>", {noremap=true, silent=true})
+        vim.api.nvim_buf_set_keymap(0, "n", "<leader>ca", ":lua vim.lsp.buf.code_action()<cr>", {noremap=true, silent=true})
+        vim.api.nvim_buf_set_keymap(0, "n", "<leader>dl", ":lua vim.diagnostic.setloclist()<cr>", {noremap=true, silent=true})
+        vim.api.nvim_buf_set_keymap(0, "n", "<S-F6>", ":lua vim.lsp.buf.rename()<cr>", {noremap=true, silent=true})
+
+        if vim.fn["GcmpOnLspAttach"] ~= nil then
+            vim.fn["GcmpOnLspAttach"](vim.inspect(client))
+        end
+    end
 
     local utils     = require('core.utils')
     local lspconfig = require('lspconfig')
@@ -39,6 +45,7 @@ function M.SetUp()
     local root = vim.fn.expand(settings.lsp.root)
     for server, cfg in pairs(settings.lsp.servers) do
         if cfg.enable then
+            cfg.opts.on_attach = lsp_attach
             cfg.opts.capabilities = cpb
             cfg.opts.flags = { debounce_text_changes = 500 }
             if cfg.opts['cmd'] then

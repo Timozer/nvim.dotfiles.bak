@@ -20,6 +20,9 @@ func Register(p *plugin.Plugin) error {
 		func(eval *autocmdEvalExample) {
 		})
 
+	// GcmpOnLspAttach
+	p.HandleFunction(&plugin.FunctionOptions{Name: "GcmpOnLspAttach"}, GcmpOnLspAttach(p.Nvim))
+
 	// Functions
 	p.HandleFunction(&plugin.FunctionOptions{Name: "Upper"},
 		func(args []string) (string, error) {

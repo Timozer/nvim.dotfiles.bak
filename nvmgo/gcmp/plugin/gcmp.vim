@@ -24,6 +24,7 @@ call remote#host#RegisterPlugin('gcmp', '0', [
 \ {'type': 'command', 'name': 'CompleteThis', 'sync': 0, 'opts': {'complete': 'customlist,CompleteThisC', 'nargs': '?'}},
 \ {'type': 'command', 'name': 'ExCmd', 'sync': 0, 'opts': {'bang': '', 'eval': '[getcwd(),bufname()]', 'nargs': '?'}},
 \ {'type': 'function', 'name': 'CompleteThisC', 'sync': 1, 'opts': {}},
+\ {'type': 'function', 'name': 'GcmpOnLspAttach', 'sync': 0, 'opts': {}},
 \ {'type': 'function', 'name': 'GetVV', 'sync': 1, 'opts': {}},
 \ {'type': 'function', 'name': 'ShowFirst', 'sync': 1, 'opts': {}},
 \ {'type': 'function', 'name': 'ShowThings', 'sync': 1, 'opts': {'eval': '[getcwd(),argc()]'}},
