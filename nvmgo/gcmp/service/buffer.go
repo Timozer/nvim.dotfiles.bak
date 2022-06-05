@@ -2,8 +2,8 @@ package service
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
+	"gcmp/types"
 	"nvmgo/lib"
 	"os"
 	"strconv"
@@ -78,22 +78,9 @@ func (b *BufferWords) LogData(logger *zerolog.Logger) {
 type Buffer struct {
 	Service
 
-	nvim *nvim.Nvim
-
 	words         map[nvim.Buffer]*BufferWords
 	eventChan     chan *Event
 	eventHandlers map[string]func(interface{}) error
-
-	db     *sql.DB
-	logger *zerolog.Logger
-
-	inited bool
-}
-
-func (b *Buffer) initDB() error {
-	var err error
-	b.db, err = sql.Open("sqlite3", "buffer.db")
-	return err
 }
 
 var (
@@ -103,18 +90,20 @@ var (
 
 func GetBufferIns() *Buffer {
 	gBufferOnce.Do(func() {
-		gBufferIns = &Buffer{inited: false}
+		gBufferIns = &Buffer{}
+		gBufferIns.inited = false
 	})
 	return gBufferIns
 }
 
-func (b *Buffer) Init(v *nvim.Nvim) error {
+func (b *Buffer) Init(v *nvim.Nvim, cfg *types.Config) error {
 	b.nvim = v
+	b.config = cfg
 	b.words = make(map[nvim.Buffer]*BufferWords)
 	b.eventChan = make(chan *Event, 100)
 	b.eventHandlers = make(map[string]func(interface{}) error)
 	b.eventHandlers["BufLines"] = b.BufLines
-	b.logger = lib.NewLogger("logs/service/buffer.log")
+	b.logger = lib.NewLogger("service/buffer.log", &b.config.Log)
 	b.inited = true
 	return nil
 }

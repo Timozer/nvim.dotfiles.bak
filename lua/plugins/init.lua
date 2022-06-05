@@ -161,6 +161,12 @@ function M.SetUp(opts)
             }
         }
     }
+    vim.g.gcmp_config = {
+        log = {
+            dir = vim.fn.stdpath("config") .. "/.cache/gcmp/logs/",
+            level = "debug", -- debug | info
+        },
+    }
 end
 
 return M

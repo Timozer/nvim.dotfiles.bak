@@ -2,15 +2,11 @@ package handler
 
 import (
 	"gcmp/service"
-	"nvmgo/lib"
 
 	"github.com/neovim/go-client/nvim"
 )
 
 func BufLinesEventHandler(e ...interface{}) {
-	logger := lib.NewLogger("logs/buflinesevent.log")
-	logger.Debug().Interface("Event", e).Msg("triggered buf lines event")
-
 	event := &nvim.BufLinesEvent{LineData: []string{}}
 	event.Buffer, _ = e[0].(nvim.Buffer)
 	event.Changetick, _ = e[1].(int64)

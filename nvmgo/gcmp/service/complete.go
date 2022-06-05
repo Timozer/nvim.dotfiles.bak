@@ -3,24 +3,19 @@ package service
 import (
 	"context"
 	"fmt"
+	"gcmp/types"
 	"nvmgo/lib"
 	"os"
 	"sort"
 	"sync"
 
 	"github.com/neovim/go-client/nvim"
-	"github.com/rs/zerolog"
 )
 
 type Complete struct {
 	Service
 
-	nvim *nvim.Nvim
-
 	eventChan chan *nvim.BufLinesEvent
-
-	logger *zerolog.Logger
-	inited bool
 }
 
 var (
@@ -30,15 +25,17 @@ var (
 
 func GetCompleteIns() *Complete {
 	gCompleteOnce.Do(func() {
-		gCompleteIns = &Complete{inited: false}
+		gCompleteIns = &Complete{}
+		gCompleteIns.inited = false
 	})
 	return gCompleteIns
 }
 
-func (c *Complete) Init(v *nvim.Nvim) error {
+func (c *Complete) Init(v *nvim.Nvim, cfg *types.Config) error {
 	c.nvim = v
+	c.config = cfg
 	c.eventChan = make(chan *nvim.BufLinesEvent, 1000)
-	c.logger = lib.NewLogger("logs/service/complete.log")
+	c.logger = lib.NewLogger("service/complete.log", &c.config.Log)
 	c.inited = true
 	return nil
 }
