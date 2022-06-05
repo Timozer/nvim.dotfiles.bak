@@ -1,4 +1,3 @@
-local plugins = {
     -- display
     -- gitsigns = {
         -- 'gitsigns.nvim',
@@ -126,6 +125,48 @@ local plugins = {
       --   'auto-session',
         -- config = require('plugins.config.auto_session').init
     -- },
-}
 
-return plugins
+
+local M = {}
+
+function M.SetUp(opts)
+    opts = opts or {}
+    vim.g.gpm_config = {
+        log = {
+            dir = vim.fn.stdpath("config") .. "/.cache/gpm/logs/",
+            level = "debug", -- debug | info
+        },
+        plugin = {
+            install_path = vim.fn.stdpath("config") .. "/pack/",
+            compile_path = vim.fn.stdpath("config") .. "/plugin/gpm_compiled.lua",
+            plugins = {
+                {
+                    type = "git",
+                    path = "https://github.com/nathom/filetype.nvim",
+                    setup = require("plugins.setup.filetype").SetUp
+                },
+                {
+                    type = "git",
+                    path = "https://github.com/sainnhe/edge",
+                    setup = require("plugins.setup.edge").SetUp
+                },
+                {
+                    type = "git", -- git | local | http
+                    path = "https://github.com/neovim/nvim-lspconfig",
+                    setup = require("plugins.setup.lspconfig").SetUp
+                },
+                {
+                    type = "git",
+                    path = "https://github.com/junegunn/vim-easy-align",
+                    opt = false,
+                    setup = require("plugins.setup.vim_easy_align").SetUp,
+                    event = {
+                        { name = 'BurReadPre', pattern = "*" }
+                    }
+                }
+            }
+        }
+    }
+end
+
+return M

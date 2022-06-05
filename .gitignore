@@ -3,3 +3,6 @@ commitlint.config.js
 .data
 packer_compiled.lua
 logs
+pack/
+plugin_examples
+gpm_compiled.lua
