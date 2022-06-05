@@ -82,15 +82,23 @@ func Sync(v *nvim.Nvim) func() {
 				return
 			}
 		}
+		ifooter := &InfoFooter{}
+		err = lbox.AddItem(ifooter)
+		if err != nil {
+			cmn.NvimNotifyError(v, fmt.Sprintf("add info footer item fail, err: %s", err))
+			return
+		}
+		ifooter.Status = "installing plugins..."
 
 		wg := sync.WaitGroup{}
 		for _, p := range cfg.Plugin.Plugins {
+			p.InstallPath = cfg.Plugin.InstallPath
 			wg.Add(1)
 			go func(plugin *types.Plugin) {
 				defer func() {
 					wg.Done()
 				}()
-				plugin.Sync(cfg.Plugin.InstallPath)
+				plugin.Sync()
 			}(p)
 		}
 
@@ -99,14 +107,25 @@ func Sync(v *nvim.Nvim) func() {
 		go UpdateInfoBox(ctx, lbox)
 
 		wg.Wait()
+		ifooter.Status = "install plugins done. start compiling ..."
 
 		MakeLoader(v, cfg.Plugin.Plugins, cfg.Plugin.CompilePath)
 
+		ifooter.Status = "compile plugins done."
+		lbox.Redraw()
 	}
 }
 
+type InfoFooter struct {
+	Status string
+}
+
+func (i *InfoFooter) GetLines() [][]byte {
+	return [][]byte{[]byte(i.Status)}
+}
+
 func UpdateInfoBox(ctx context.Context, lbox *ui.ListBox) {
-	tick := time.NewTicker(time.Millisecond * 300)
+	tick := time.NewTicker(time.Millisecond * 100)
 	for {
 		select {
 		case <-tick.C:
@@ -123,7 +142,7 @@ func MakeLuaLoadString(v *nvim.Nvim, plugin *types.Plugin) string {
 		local args = { ... }
 		local plugin = args[1]
 		for _, item in ipairs(vim.g.gpm_config["plugin"]["plugins"]) do
-			if item.name == plugin.name then
+			if item.path == plugin.path then
 				if type(item.setup) == 'function' then
 					return vim.inspect(string.dump(item.setup, true))
 				else
@@ -178,7 +197,6 @@ local no_errors, err_msg = pcall(function()
 
 		luastr += fmt.Sprintf("\tvim.cmd [[ packadd %s ]]\n", p.Name)
 		setupStr := fmt.Sprintf("\tloadStr(%s)\n", MakeLuaLoadString(v, p))
-		cmn.NvimNotifyInfo(v, setupStr)
 		luastr += setupStr
 
 		events[p.Name] = p.Event

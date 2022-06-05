@@ -1,13 +1,4 @@
 local plugins = {
-    -- packer = { 'packer.nvim' },
-    -- startuptime = {
-      --   'vim-startuptime',
-        -- opt = true,
-        -- cmd = 'StartupTime',
-    -- },
-    -- filetype = {
-        -- 'filetype.nvim'
-    -- },
     -- display
     -- gitsigns = {
         -- 'gitsigns.nvim',

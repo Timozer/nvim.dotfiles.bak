@@ -195,11 +195,17 @@ vim.g.gpm_config = {
 		level = "debug", -- debug | info
 	},
 	plugin = {
-		install_path = vim.fn.stdpath("config") .. "/pack/gpm/",
+		install_path = vim.fn.stdpath("config") .. "/pack/",
 		compile_path = vim.fn.stdpath("config") .. "/plugin/gpm_compiled.lua",
 		plugins = {
 			{
-				name = "edge",
+				type = "git",
+				path = "https://github.com/nathom/filetype.nvim",
+				opt = false,
+				setup = function()
+				end
+			},
+			{
 				type = "git",
 				path = "https://github.com/sainnhe/edge",
 				opt = false,
@@ -215,7 +221,6 @@ vim.g.gpm_config = {
 				end
 			},
 			{
-				name = "nvim-lspconfig",
 				type = "git", -- git | local | http
 				path = "https://github.com/neovim/nvim-lspconfig",
 				opt = false,
@@ -268,14 +273,12 @@ vim.g.gpm_config = {
 									cfg.opts.cmd[1] = root..'/'..server..'/'..string.sub(cfg.opts.cmd[1], 2)
 								end
 							end
-                            print(server .. " lsp setup " .. vim.inspect(cfg.opts))
 							lspconfig[server].setup(cfg.opts)
 						end
 					end
 				end,
 			},
 			{
-				name = "vim-easy-align",
 				type = "git",
 				path = "https://github.com/junegunn/vim-easy-align",
 				opt = false,
