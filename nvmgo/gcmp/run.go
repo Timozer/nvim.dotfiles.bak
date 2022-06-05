@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 
 	"nvmgo/lib"
 	lnvim "nvmgo/lib/nvim"
@@ -42,6 +43,7 @@ func (r *Run) Run(cmdCtx *lnvim.CmdContext) error {
 	}
 
 	logger := lib.NewLogger("gcmp.log", &cfg.Log)
+	lnvim.NvimNotifyInfo(v, fmt.Sprintf("gcmp log file: %s", filepath.Join(cfg.Log.Dir, "gcmp.log")))
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
