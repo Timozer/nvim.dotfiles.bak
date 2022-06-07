@@ -9,6 +9,8 @@ import (
 	"sort"
 	"sync"
 
+	lnvim "nvmgo/lib/nvim"
+
 	"github.com/neovim/go-client/nvim"
 )
 
@@ -205,6 +207,8 @@ func (c *Complete) ProcessEvent(e *nvim.BufLinesEvent) error {
 	if words == nil || (words.Len() == 1 && words[0].Word == string(before)) {
 		return nil
 	}
+	ret := GetLspCompletions(c.nvim, string(before))
+	c.logger.Debug().Str("LspRet", ret).Msg("CompleteFromLsp")
 	sort.Sort(words)
 	c.logger.Debug().Interface("Bufnr", e.Buffer).Interface("Words", words).Msg("BeforeCompleteCall")
 	c.nvim.Call("complete", nil, startCol+1, words)
@@ -215,3 +219,29 @@ func (c *Complete) ProcessEvent(e *nvim.BufLinesEvent) error {
 var (
 	CompleteModes = []string{"", "eval", "function", "ctrl_x"}
 )
+
+func GetLspCompletions(v *nvim.Nvim, prefix string) string {
+	luaFunc := `
+    return (function(...)
+        local args = { ... }
+        local result = vim.lsp.buf_request(
+            0, "textDocument/completion", vim.lsp.util.make_position_params(), 
+            function(err, result, ctx, config)
+                print("err: " .. vim.inspect(err))
+                print("result: " .. vim.inspect(result))
+                print("ctx: " .. vim.inspect(ctx))
+                print("config: " .. vim.inspect(config))
+				local items = vim.lsp.util.extract_completion_items(result)
+				print("items: " .. vim.inspect(items))
+            end
+        )
+        return vim.inspect(result)
+    end)(...)
+    `
+	result := ""
+	err := v.ExecLua(luaFunc, &result, prefix)
+	if err != nil {
+		lnvim.NvimNotifyError(v, err.Error())
+	}
+	return result
+}

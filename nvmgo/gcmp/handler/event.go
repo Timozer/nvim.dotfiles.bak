@@ -19,12 +19,6 @@ func BufLinesEventHandler(e ...interface{}) {
 	}
 	event.IsMultipart, _ = e[5].(bool)
 
-	tmpE := &service.Event{
-		Type: "BufLines",
-		Data: event,
-	}
-
-	service.GetBufferIns().SendEvent(tmpE)
 	service.GetCompleteIns().SendEvent(event)
 }
 

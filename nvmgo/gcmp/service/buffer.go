@@ -4,82 +4,26 @@ import (
 	"context"
 	"fmt"
 	"nvmgo/lib"
+	lnvim "nvmgo/lib/nvim"
 	"os"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"sync"
+
+	"gcmp/types"
 
 	"github.com/lithammer/fuzzysearch/fuzzy"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/neovim/go-client/nvim"
-	"github.com/rs/zerolog"
 	"github.com/yanyiwu/gojieba"
 )
-
-type BufferWords struct {
-	data [][]string
-}
-
-func NewBufferWords() *BufferWords {
-	return &BufferWords{
-		data: make([][]string, 0),
-	}
-}
-
-func (b *BufferWords) DelLines(s, e int64) {
-	if int64(len(b.data)-1) < s || e < 0 {
-		return
-	}
-	if s < 0 {
-		s = 0
-	}
-	if e > int64(len(b.data)) {
-		e = int64(len(b.data))
-	}
-	b.data = append(b.data[:s], b.data[e:]...)
-}
-
-func (b *BufferWords) InsertLine(idx int64, words []string) error {
-	if idx < 0 {
-		return fmt.Errorf("invalid index: %d", idx)
-	}
-	if idx < int64(len(b.data)) {
-		b.data = append(b.data[:idx+1], b.data[idx:]...)
-		b.data[idx] = words
-	}
-	for i := idx - int64(len(b.data)); i > 0; i-- {
-		b.data = append(b.data, nil)
-	}
-	b.data = append(b.data, words)
-	return nil
-}
-
-func (b *BufferWords) FuzzyFind(word string) CompleteItems {
-	ret := make(CompleteItems, 0)
-	for i := range b.data {
-		targets := fuzzy.RankFindFold(word, b.data[i])
-		for j := range targets {
-			ret = append(ret, CompleteItem{
-				Word:     targets[j].Target,
-				Distance: targets[j].Distance,
-				Menu:     "BUF",
-			})
-		}
-	}
-	return ret
-}
-
-func (b *BufferWords) LogData(logger *zerolog.Logger) {
-	for i := range b.data {
-		logger.Debug().Int("Line", i).Interface("Words", b.data[i]).Msg("BufferWords")
-	}
-}
 
 type Buffer struct {
 	Service
 
-	words         map[nvim.Buffer]*BufferWords
-	eventChan     chan *Event
+	words         sync.Map
+	eventChan     chan *types.Event
 	eventHandlers map[string]func(interface{}) error
 }
 
@@ -98,16 +42,17 @@ func GetBufferIns() *Buffer {
 
 func (b *Buffer) Init(v *nvim.Nvim) error {
 	b.nvim = v
-	b.words = make(map[nvim.Buffer]*BufferWords)
-	b.eventChan = make(chan *Event, 100)
+	b.eventChan = make(chan *types.Event, 100)
 	b.eventHandlers = make(map[string]func(interface{}) error)
-	b.eventHandlers["BufLines"] = b.BufLines
+	b.eventHandlers["BufEnter"] = b.BufEnter
+	b.eventHandlers["BufWritePost"] = b.BufWritePost
+	b.eventHandlers["BufWipeout"] = b.BufWipeout
 	b.logger = lib.NewLogger(filepath.Join(lib.GetProgramDir(), "service/buffer.log"))
 	b.inited = true
 	return nil
 }
 
-func (b *Buffer) SendEvent(e *Event) {
+func (b *Buffer) SendEvent(e *types.Event) {
 	b.eventChan <- e
 }
 
@@ -134,16 +79,33 @@ func (b *Buffer) Serve(ctx context.Context) {
 
 func (b *Buffer) FuzzyFind(buf nvim.Buffer, word string) CompleteItems {
 	b.logger.Debug().Interface("Bufnr", buf).Msg("FuzzyFind")
-	bufwords, ok := b.words[buf]
+	val, ok := b.words.Load(buf)
 	if !ok {
-		b.logger.Debug().Interface("Bufnr", buf).Str("buffer not inited", "").Msg("FuzzyFind")
+		b.logger.Debug().Interface("Bufnr", buf).Str("buffer not build index", "").Msg("FuzzyFind")
 		return nil
 	}
-	return bufwords.FuzzyFind(word)
+
+	words, _ := val.([]string)
+
+	ret := make(CompleteItems, 0)
+	targets := fuzzy.RankFindFold(word, words)
+	for j := range targets {
+		ret = append(ret, CompleteItem{
+			Word:     targets[j].Target,
+			Distance: targets[j].Distance,
+			Menu:     "BUF",
+		})
+	}
+	return ret
 }
 
-func (b *Buffer) ProcessEvent(e *Event) {
-	err := b.eventHandlers[e.Type](e.Data)
+func (b *Buffer) ProcessEvent(e *types.Event) {
+	h, ok := b.eventHandlers[e.Type]
+	if !ok {
+		b.logger.Warn().Str("EventType", e.Type).Msg("Unsupported Event")
+		return
+	}
+	err := h(e.Data)
 	if err != nil {
 		b.logger.Error().Err(err).Msg("ProcessEvent")
 	}
@@ -161,9 +123,7 @@ func Filter(lst []string, cond func(string) bool) []string {
 	return r
 }
 
-func (b *Buffer) BufLines(data interface{}) error {
-	b.logger.Debug().Msg("BufLines Start")
-	defer b.logger.Debug().Msg("BufLines End")
+func (b *Buffer) BuildIndex(buf nvim.Buffer) error {
 	defer func() {
 		if p := recover(); p != nil {
 			b.logger.Error().Msg(fmt.Sprintf("%v\n", p))
@@ -171,44 +131,101 @@ func (b *Buffer) BufLines(data interface{}) error {
 		}
 	}()
 
-	buflines, _ := data.(*nvim.BufLinesEvent)
-
-	bufwords, ok := b.words[buflines.Buffer]
-	if !ok {
-		bufwords = NewBufferWords()
-		b.words[buflines.Buffer] = bufwords
-		b.logger.Debug().Interface("Burnr", buflines.Buffer).Msg("BufLines AddBuf")
-	} else {
-		endIdx := buflines.LastLine
-		if endIdx == -1 {
-			endIdx = int64(len(buflines.LineData))
-		}
-		bufwords.DelLines(buflines.FirstLine, endIdx)
+	count, err := b.nvim.BufferLineCount(buf)
+	if err != nil {
+		b.logger.Error().Err(err).Msg("BufferLineCount")
+		lnvim.NvimNotifyError(b.nvim, fmt.Sprintf("get buffer line count fail, err: %s", err))
+		return err
 	}
+	b.logger.Debug().Int("LineCount", count).Msg("BufferLineCount")
+	lines, err := b.nvim.BufferLines(buf, 0, -1, false)
+	if err != nil {
+		b.logger.Error().Err(err).Msg("BufferLines")
+		lnvim.NvimNotifyError(b.nvim, fmt.Sprintf("get buffer lines fail, err: %s", err))
+		return err
+	}
+	b.logger.Debug().Interface("Lines", lines).Msg("BufferLines")
 
 	jieba := gojieba.NewJieba()
 	defer jieba.Free()
 
-	b.logger.Debug().Interface("Burnr", buflines.Buffer).Msg("BufLines Before AddWords")
-	for i := range buflines.LineData {
-		words := jieba.Cut(buflines.LineData[i], true)
-		words = Filter(words, func(word string) bool {
-			if len(word) < 3 {
-				return true
-			}
-			if _, err := strconv.ParseFloat(word, 64); err == nil {
-				return true
-			}
-			return false
-		})
+	words := make([]string, 0)
+	for i := range lines {
+		words = append(words, jieba.Cut(string(lines[i]), true)...)
+	}
 
-		b.logger.Debug().Interface("Burnr", buflines.Buffer).Interface("Words", words).Msg("BufLines AddWords")
-		err := bufwords.InsertLine(buflines.FirstLine+int64(i), words)
-		if err != nil {
-			return err
+	// 过滤
+	words = Filter(words, func(word string) bool {
+		if len(word) < 3 {
+			return true
+		}
+		if _, err := strconv.ParseFloat(word, 64); err == nil {
+			return true
+		}
+		return false
+	})
+
+	// 排序
+	sort.Strings(words)
+
+	// 去重
+	words = DeDup(words)
+
+	b.words.Store(buf, words)
+	return nil
+
+}
+
+func DeDup(arr []string) []string {
+	length := len(arr)
+	if length == 0 {
+		return arr
+	}
+
+	j := 0
+	for i := 1; i < length; i++ {
+		if arr[i] != arr[j] {
+			j++
+			if j < i {
+				arr[i], arr[j] = arr[j], arr[i]
+			}
 		}
 	}
-	b.logger.Debug().Interface("Burnr", buflines.Buffer).Msg("BufLines After AddWords")
 
+	return arr[:j+1]
+}
+
+func (b *Buffer) BufEnter(data interface{}) error {
+	buf, _ := data.(nvim.Buffer)
+
+	buflisted := false
+	buftype := ""
+	batch := b.nvim.NewBatch()
+	batch.BufferOption(buf, "buflisted", &buflisted)
+	batch.BufferOption(buf, "buftype", &buftype)
+	if err := batch.Execute(); err != nil {
+		lnvim.NvimNotifyError(b.nvim, err.Error())
+		return nil
+	}
+
+	if !buflisted || buftype == "terminal" {
+		return nil
+	}
+	// TODO: check buffer size, dont build index for large buffer
+	// :h wordcount()
+
+	return b.BuildIndex(buf)
+}
+
+func (b *Buffer) BufWritePost(data interface{}) error {
+	buf, _ := data.(nvim.Buffer)
+	if _, ok := b.words.Load(buf); !ok {
+		return nil
+	}
+	return b.BuildIndex(buf)
+}
+func (b *Buffer) BufWipeout(data interface{}) error {
+	buf, _ := data.(nvim.Buffer)
+	b.words.Delete(buf)
 	return nil
 }

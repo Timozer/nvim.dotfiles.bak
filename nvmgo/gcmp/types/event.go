@@ -1,4 +1,4 @@
-package service
+package types
 
 type Event struct {
 	Type string
