@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"gcmp/types"
 	"nvmgo/lib"
 	lnvim "nvmgo/lib/nvim"
 	"os"
@@ -11,10 +12,7 @@ import (
 	"strconv"
 	"sync"
 
-	"gcmp/types"
-
 	"github.com/lithammer/fuzzysearch/fuzzy"
-	_ "github.com/mattn/go-sqlite3"
 	"github.com/neovim/go-client/nvim"
 	"github.com/yanyiwu/gojieba"
 )
@@ -77,26 +75,28 @@ func (b *Buffer) Serve(ctx context.Context) {
 	}
 }
 
-func (b *Buffer) FuzzyFind(buf nvim.Buffer, word string) CompleteItems {
-	b.logger.Debug().Interface("Bufnr", buf).Msg("FuzzyFind")
-	val, ok := b.words.Load(buf)
+func (b *Buffer) Complete(ctx *types.NvimCompletionContext) {
+	b.logger.Debug().Str("ReqId", ctx.ReqId).Msg("BufferComplete")
+	val, ok := b.words.Load(ctx.Bufnr)
 	if !ok {
-		b.logger.Debug().Interface("Bufnr", buf).Str("buffer not build index", "").Msg("FuzzyFind")
-		return nil
+		b.logger.Debug().Str("ReqId", ctx.ReqId).Str("buffer not build index", "").Msg("BufferComplete")
+		ctx.ResultChan <- nil
+		return
 	}
 
 	words, _ := val.([]string)
 
-	ret := make(CompleteItems, 0)
-	targets := fuzzy.RankFindFold(word, words)
+	ret := make(types.NvimCompletionList, 0)
+	targets := fuzzy.RankFindFold(ctx.LineBefore, words)
 	for j := range targets {
-		ret = append(ret, CompleteItem{
+		ret = append(ret, types.NvimCompletionItem{
 			Word:     targets[j].Target,
+			Kind:     "v",
 			Distance: targets[j].Distance,
 			Menu:     "BUF",
 		})
 	}
-	return ret
+	ctx.ResultChan <- &ret
 }
 
 func (b *Buffer) ProcessEvent(e *types.Event) {
@@ -173,7 +173,6 @@ func (b *Buffer) BuildIndex(buf nvim.Buffer) error {
 
 	b.words.Store(buf, words)
 	return nil
-
 }
 
 func DeDup(arr []string) []string {

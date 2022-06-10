@@ -36,6 +36,13 @@ func (r *Run) Run(cmdCtx *lnvim.CmdContext) error {
 	bufService.Init(v)
 	go bufService.Serve(ctx)
 
+	lspService := service.GetLspIns()
+	lspService.Init(v)
+	go lspService.Serve(ctx)
+
+	cmpService.AddSource(bufService)
+	cmpService.AddSource(lspService)
+
 	if err := cmdCtx.HandlerRegister(plugin.New(v)); err != nil {
 		return err
 	}

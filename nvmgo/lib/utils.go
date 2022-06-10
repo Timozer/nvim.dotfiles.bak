@@ -44,3 +44,12 @@ func GetProgramPath() string {
 func GetProgramDir() string {
 	return filepath.Dir(GetProgramPath())
 }
+
+func ReverseBytes(src []byte) []byte {
+	length := len(src)
+	ret := make([]byte, len(src))
+	for i := 0; i < length; i++ {
+		ret[i] = src[length-1-i]
+	}
+	return ret
+}

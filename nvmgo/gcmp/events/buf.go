@@ -31,7 +31,7 @@ func BufEnter(v *nvim.Nvim) func() {
 
 		attached, err := v.AttachBuffer(buf, false, map[string]interface{}{})
 		if err != nil || !attached {
-			lnvim.NvimNotifyError(v, fmt.Sprintf("buffer not attached or err: %s", attached, err.Error()))
+			lnvim.NvimNotifyError(v, fmt.Sprintf("buffer not attached or err: %s", err.Error()))
 			return
 		}
 		service.GetBufferIns().SendEvent(&types.Event{

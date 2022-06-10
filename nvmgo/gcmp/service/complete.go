@@ -3,21 +3,27 @@ package service
 import (
 	"context"
 	"fmt"
+	"gcmp/types"
 	"nvmgo/lib"
 	"os"
 	"path/filepath"
 	"sort"
 	"sync"
-
-	lnvim "nvmgo/lib/nvim"
+	"time"
 
 	"github.com/neovim/go-client/nvim"
 )
+
+type CompleteSource interface {
+	Complete(*types.NvimCompletionContext)
+}
 
 type Complete struct {
 	Service
 
 	eventChan chan *nvim.BufLinesEvent
+
+	sources []CompleteSource
 }
 
 var (
@@ -39,6 +45,10 @@ func (c *Complete) Init(v *nvim.Nvim) error {
 	c.logger = lib.NewLogger(filepath.Join(lib.GetProgramDir(), "service/complete.log"))
 	c.inited = true
 	return nil
+}
+
+func (c *Complete) AddSource(src CompleteSource) {
+	c.sources = append(c.sources, src)
 }
 
 func (c *Complete) SendEvent(e *nvim.BufLinesEvent) error {
@@ -70,80 +80,6 @@ func (c *Complete) Serve(ctx context.Context) {
 	}
 }
 
-type CompleteItem struct {
-	Word     string      `msgpack:"word"`
-	Abbr     string      `msgpack:"abbr"`
-	Menu     string      `msgpack:"menu"`
-	Info     string      `msgpack:"info"`
-	Kind     string      `msgpack:"kind"`
-	Icase    int         `msgpack:"icase"`
-	Equal    bool        `msgpack:"equal"`
-	Dup      bool        `msgpack:"dup"`
-	Empty    bool        `msgpack:"empty"`
-	UserData interface{} `msgpack:"user_data"`
-
-	Distance int `msgpack:"-"`
-}
-
-type CompleteItems []CompleteItem
-
-func (c CompleteItems) Len() int {
-	return len(c)
-}
-
-func (c CompleteItems) Less(i, j int) bool {
-	return c[i].Distance < c[j].Distance
-}
-
-func (c CompleteItems) Swap(i, j int) {
-	c[i], c[j] = c[j], c[i]
-}
-
-type CompleteContext struct {
-	Bufnr         nvim.Buffer
-	BufName       string
-	FileType      string
-	FileFormat    string
-	TabStop       int
-	ExpandTab     bool
-	Cursor        [2]int
-	CommentString string
-	LineCount     int
-	Mode          nvim.Mode
-	CompleteInfos map[string]interface{}
-}
-
-func ReverseBytes(src []byte) []byte {
-	length := len(src)
-	ret := make([]byte, len(src))
-	for i := 0; i < length; i++ {
-		ret[i] = src[length-1-i]
-	}
-	return ret
-}
-
-func (c *Complete) GetCompleteContext(buf nvim.Buffer) (*CompleteContext, error) {
-	ctx := CompleteContext{
-		Bufnr:         buf,
-		CompleteInfos: make(map[string]interface{}),
-	}
-
-	b := c.nvim.NewBatch()
-	b.Mode(&ctx.Mode)
-	b.BufferName(buf, &ctx.BufName)
-	b.BufferLineCount(buf, &ctx.LineCount)
-	b.BufferOption(buf, "filetype", &ctx.FileType)
-	b.BufferOption(buf, "fileformat", &ctx.FileFormat)
-	b.BufferOption(buf, "tabstop", &ctx.TabStop)
-	b.BufferOption(buf, "expandtab", &ctx.ExpandTab)
-	b.BufferOption(buf, "commentstring", &ctx.CommentString)
-	b.Call("complete_info", &ctx.CompleteInfos, []string{"mode", "pum_visible", "items", "selected"})
-	b.WindowCursor(nvim.Window(0), &ctx.Cursor)
-	err := b.Execute()
-
-	return &ctx, err
-}
-
 func (c *Complete) ProcessEvent(e *nvim.BufLinesEvent) error {
 	defer func() {
 		if p := recover(); p != nil {
@@ -156,62 +92,58 @@ func (c *Complete) ProcessEvent(e *nvim.BufLinesEvent) error {
 		return nil
 	}
 
-	ctx, err := c.GetCompleteContext(e.Buffer)
+	ctx, err := types.NewCompleteContext(c.nvim, e.Buffer)
 	if err != nil {
 		return err
 	}
 	c.logger.Debug().Interface("Context", ctx).Msg("ProcessEvent")
+	defer ctx.CancelFunc()
 
 	if pum_visible, _ := ctx.CompleteInfos["pum_visible"].(int64); pum_visible == 1 {
 		return nil
 	}
-	if ctx.Mode.Mode[0] != 'i' {
-		return nil
-	}
-
-	lines, err := c.nvim.BufferLines(e.Buffer, ctx.Cursor[0]-1, ctx.Cursor[0], true)
-	if err != nil {
-		c.logger.Error().Err(err).Msg("BufferLines")
-		return err
-	}
-	line := string(lines[0])
-	line_before := line[:ctx.Cursor[1]]
-	// line_after := line[ctx.Cursor[1]:]
-
-	before := make([]byte, 0)
-	for i := len(line_before) - 1; i >= 0; i-- {
-		if lib.IsSpace(line_before[i]) {
-			break
-		}
-		before = append(before, line_before[i])
-	}
-	before = ReverseBytes(before)
-	startCol := len(line_before) - len(before)
-
-	// after := make([]byte, 0)
-	// for i := 0; i < len(line_after); i++ {
-	// 	if common.IsSpace(line_after[i]) {
-	// 		break
-	// 	}
-	// 	after = append(after, line_after[i])
-	// }
-	// endCol := len(line_before) + len(after)
-
-	if len(before) < 2 {
+	if ctx.Mode.Mode[0] != 'i' || len(ctx.LineBefore) < 2 {
 		return nil
 	}
 
 	c.logger.Debug().Interface("CompleteMode", ctx.CompleteInfos["mode"]).Msg("ProcessEvents")
 
-	words := GetBufferIns().FuzzyFind(e.Buffer, string(before))
-	if words == nil || (words.Len() == 1 && words[0].Word == string(before)) {
+	ctx.ResultChan = make(chan *types.NvimCompletionList, len(c.sources))
+	for i := range c.sources {
+		go c.sources[i].Complete(ctx)
+	}
+
+	results := make([]*types.NvimCompletionList, 0)
+	timeout := time.NewTicker(time.Millisecond * 100)
+	func() {
+		for {
+			select {
+			case itemList := <-ctx.ResultChan:
+				c.logger.Debug().Interface("ItemList", itemList).Msg("ReceiveItemList")
+				results = append(results, itemList)
+				if len(results) == len(c.sources) {
+					return
+				}
+			case <-timeout.C:
+				c.logger.Debug().Msg("WaitCompletionList Timeout")
+				return
+			}
+		}
+	}()
+
+	words := make(types.NvimCompletionList, 0)
+	for i := range results {
+		if results[i] == nil || results[i].Len() == 0 {
+			continue
+		}
+		words = append(words, *results[i]...)
+	}
+	if words == nil || (words.Len() == 1 && words[0].Word == string(ctx.LineBefore)) {
 		return nil
 	}
-	ret := GetLspCompletions(c.nvim, string(before))
-	c.logger.Debug().Str("LspRet", ret).Msg("CompleteFromLsp")
 	sort.Sort(words)
 	c.logger.Debug().Interface("Bufnr", e.Buffer).Interface("Words", words).Msg("BeforeCompleteCall")
-	c.nvim.Call("complete", nil, startCol+1, words)
+	c.nvim.Call("complete", nil, ctx.StartCol+1, words)
 	c.logger.Debug().Msg("AfterCompleteCall")
 	return nil
 }
@@ -219,29 +151,3 @@ func (c *Complete) ProcessEvent(e *nvim.BufLinesEvent) error {
 var (
 	CompleteModes = []string{"", "eval", "function", "ctrl_x"}
 )
-
-func GetLspCompletions(v *nvim.Nvim, prefix string) string {
-	luaFunc := `
-    return (function(...)
-        local args = { ... }
-        local result = vim.lsp.buf_request(
-            0, "textDocument/completion", vim.lsp.util.make_position_params(), 
-            function(err, result, ctx, config)
-                print("err: " .. vim.inspect(err))
-                print("result: " .. vim.inspect(result))
-                print("ctx: " .. vim.inspect(ctx))
-                print("config: " .. vim.inspect(config))
-				local items = vim.lsp.util.extract_completion_items(result)
-				print("items: " .. vim.inspect(items))
-            end
-        )
-        return vim.inspect(result)
-    end)(...)
-    `
-	result := ""
-	err := v.ExecLua(luaFunc, &result, prefix)
-	if err != nil {
-		lnvim.NvimNotifyError(v, err.Error())
-	}
-	return result
-}

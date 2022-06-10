@@ -2,6 +2,7 @@ package handler
 
 import (
 	"gcmp/events"
+	"gcmp/service"
 
 	"github.com/neovim/go-client/nvim"
 	"github.com/neovim/go-client/nvim/plugin"
@@ -28,6 +29,7 @@ func Register(p *plugin.Plugin) error {
 		func(args []string, eval *someArgs) ([]string, error) {
 			return returnArgs(p, eval)
 		})
+	p.HandleFunction(&plugin.FunctionOptions{Name: "LspCompletionResp"}, service.GetLspIns().CompletionResp)
 
 	// Command Completion
 	p.HandleCommand(&plugin.CommandOptions{Name: "CompleteThis", NArgs: "?", Complete: "customlist,CompleteThisC"},

@@ -4,8 +4,8 @@ go 1.18
 
 require (
 	github.com/alecthomas/kong v0.5.0
+	github.com/google/uuid v1.3.0
 	github.com/lithammer/fuzzysearch v1.1.5
-	github.com/mattn/go-sqlite3 v1.14.13
 	github.com/neovim/go-client v1.2.1
 	github.com/rs/zerolog v1.26.1
 	github.com/yanyiwu/gojieba v1.1.2
