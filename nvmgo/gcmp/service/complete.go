@@ -96,7 +96,6 @@ func (c *Complete) ProcessEvent(e *nvim.BufLinesEvent) error {
 	if err != nil {
 		return err
 	}
-	c.logger.Debug().Interface("Context", ctx).Msg("ProcessEvent")
 	defer ctx.CancelFunc()
 
 	if pum_visible, _ := ctx.CompleteInfos["pum_visible"].(int64); pum_visible == 1 {

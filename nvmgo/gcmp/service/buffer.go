@@ -76,7 +76,7 @@ func (b *Buffer) Serve(ctx context.Context) {
 }
 
 func (b *Buffer) Complete(ctx *types.NvimCompletionContext) {
-	b.logger.Debug().Str("ReqId", ctx.ReqId).Msg("BufferComplete")
+	b.logger.Debug().Str("ReqId", ctx.ReqId).Msg("BufferComplete Start")
 	val, ok := b.words.Load(ctx.Bufnr)
 	if !ok {
 		b.logger.Debug().Str("ReqId", ctx.ReqId).Str("buffer not build index", "").Msg("BufferComplete")
@@ -97,6 +97,7 @@ func (b *Buffer) Complete(ctx *types.NvimCompletionContext) {
 		})
 	}
 	ctx.ResultChan <- &ret
+	b.logger.Debug().Str("ReqId", ctx.ReqId).Msg("BufferComplete End")
 }
 
 func (b *Buffer) ProcessEvent(e *types.Event) {
@@ -144,7 +145,6 @@ func (b *Buffer) BuildIndex(buf nvim.Buffer) error {
 		lnvim.NvimNotifyError(b.nvim, fmt.Sprintf("get buffer lines fail, err: %s", err))
 		return err
 	}
-	b.logger.Debug().Interface("Lines", lines).Msg("BufferLines")
 
 	jieba := gojieba.NewJieba()
 	defer jieba.Free()
