@@ -43,10 +43,96 @@ type LspCompletionItemLabelDetails struct {
 	Description string `msgpack:"description"`
 }
 
+type LspCompletionItemKind int
+
+const (
+	LspCompletionItemKindText          = 1
+	LspCompletionItemKindMethod        = 2
+	LspCompletionItemKindFunction      = 3
+	LspCompletionItemKindConstructor   = 4
+	LspCompletionItemKindField         = 5
+	LspCompletionItemKindVariable      = 6
+	LspCompletionItemKindClass         = 7
+	LspCompletionItemKindInterface     = 8
+	LspCompletionItemKindModule        = 9
+	LspCompletionItemKindProperty      = 10
+	LspCompletionItemKindUnit          = 11
+	LspCompletionItemKindValue         = 12
+	LspCompletionItemKindEnum          = 13
+	LspCompletionItemKindKeyword       = 14
+	LspCompletionItemKindSnippet       = 15
+	LspCompletionItemKindColor         = 16
+	LspCompletionItemKindFile          = 17
+	LspCompletionItemKindReference     = 18
+	LspCompletionItemKindFolder        = 19
+	LspCompletionItemKindEnumMember    = 20
+	LspCompletionItemKindConstant      = 21
+	LspCompletionItemKindStruct        = 22
+	LspCompletionItemKindEvent         = 23
+	LspCompletionItemKindOperator      = 24
+	LspCompletionItemKindTypeParameter = 25
+)
+
+func (k LspCompletionItemKind) String() string {
+	switch k {
+	case LspCompletionItemKindText:
+		return "Text"
+	case LspCompletionItemKindMethod:
+		return "Method"
+	case LspCompletionItemKindFunction:
+		return "Func"
+	case LspCompletionItemKindConstructor:
+		return "Constructor"
+	case LspCompletionItemKindField:
+		return "Field"
+	case LspCompletionItemKindVariable:
+		return "Var"
+	case LspCompletionItemKindClass:
+		return "Class"
+	case LspCompletionItemKindInterface:
+		return "Interface"
+	case LspCompletionItemKindModule:
+		return "Module"
+	case LspCompletionItemKindProperty:
+		return "Property"
+	case LspCompletionItemKindUnit:
+		return "Unit"
+	case LspCompletionItemKindValue:
+		return "Value"
+	case LspCompletionItemKindEnum:
+		return "Enum"
+	case LspCompletionItemKindKeyword:
+		return "Keyword"
+	case LspCompletionItemKindSnippet:
+		return "Snip"
+	case LspCompletionItemKindColor:
+		return "Color"
+	case LspCompletionItemKindFile:
+		return "File"
+	case LspCompletionItemKindReference:
+		return "Ref"
+	case LspCompletionItemKindFolder:
+		return "Folder"
+	case LspCompletionItemKindEnumMember:
+		return "EnumMember"
+	case LspCompletionItemKindConstant:
+		return "Constant"
+	case LspCompletionItemKindStruct:
+		return "Struct"
+	case LspCompletionItemKindEvent:
+		return "Event"
+	case LspCompletionItemKindOperator:
+		return "Operator"
+	case LspCompletionItemKindTypeParameter:
+		return "TypeParameter"
+	}
+	return ""
+}
+
 type LspCompletionItem struct {
 	Label               string                         `msgpack:"label"`
 	LabelDetails        *LspCompletionItemLabelDetails `msgpack:"labelDetails"`
-	Kind                int                            `msgpack:"kind"`
+	Kind                LspCompletionItemKind          `msgpack:"kind"`
 	Tags                []int                          `msgpack:"tags"`
 	Detail              string                         `msgpack:"detail"`
 	Documentation       interface{}                    `msgpack:"documentation"`

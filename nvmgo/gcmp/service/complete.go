@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"gcmp/types"
 	"nvmgo/lib"
+	lnvim "nvmgo/lib/nvim"
+	ltyp "nvmgo/lib/types"
+	"nvmgo/lib/ui"
 	"os"
 	"path/filepath"
-	"sort"
 	"sync"
 	"time"
 
@@ -107,12 +109,12 @@ func (c *Complete) ProcessEvent(e *nvim.BufLinesEvent) error {
 
 	c.logger.Debug().Interface("CompleteMode", ctx.CompleteInfos["mode"]).Msg("ProcessEvents")
 
-	ctx.ResultChan = make(chan *types.NvimCompletionList, len(c.sources))
+	ctx.ResultChan = make(chan *ltyp.CompletionList, len(c.sources))
 	for i := range c.sources {
 		go c.sources[i].Complete(ctx)
 	}
 
-	results := make([]*types.NvimCompletionList, 0)
+	results := make([]*ltyp.CompletionList, 0)
 	timeout := time.NewTicker(time.Millisecond * 100)
 	func() {
 		for {
@@ -130,20 +132,33 @@ func (c *Complete) ProcessEvent(e *nvim.BufLinesEvent) error {
 		}
 	}()
 
-	words := make(types.NvimCompletionList, 0)
+	words := ltyp.CompletionList{}
 	for i := range results {
 		if results[i] == nil || results[i].Len() == 0 {
 			continue
 		}
-		words = append(words, *results[i]...)
+		words.Merge(results[i])
 	}
-	if words == nil || (words.Len() == 1 && words[0].Word == string(ctx.LineBefore)) {
+	if words.Len() == 1 && words.Items[0].Word == string(ctx.LineBefore) {
 		return nil
 	}
-	sort.Sort(words)
-	c.logger.Debug().Interface("Bufnr", e.Buffer).Interface("Words", words).Msg("BeforeCompleteCall")
-	c.nvim.Call("complete", nil, ctx.StartCol+1, words)
-	c.logger.Debug().Msg("AfterCompleteCall")
+	// sort.Sort(words)
+	// c.logger.Debug().Interface("Bufnr", e.Buffer).Interface("Words", words).Msg("BeforeCompleteCall")
+	// c.nvim.Call("complete", nil, ctx.StartCol+1, words)
+	// c.logger.Debug().Msg("AfterCompleteCall")
+	pos, err := lnvim.GetScreenCursor(c.nvim)
+	if err != nil {
+		c.logger.Error().Err(err).Msg("GetScreenCursor")
+		return nil
+	}
+	m := ui.NewCompletionMenu(c.nvim, &lnvim.WinPos{
+		X: pos.X - float64(ctx.Cursor[1]-ctx.StartCol),
+		Y: pos.Y,
+	})
+	err = m.Open(words)
+	if err != nil {
+		c.logger.Error().Err(err).Msg("OpenMenuError")
+	}
 	return nil
 }
 

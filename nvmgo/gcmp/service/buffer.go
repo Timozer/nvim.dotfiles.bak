@@ -6,6 +6,7 @@ import (
 	"gcmp/types"
 	"nvmgo/lib"
 	lnvim "nvmgo/lib/nvim"
+	ltyp "nvmgo/lib/types"
 	"os"
 	"path/filepath"
 	"sort"
@@ -86,14 +87,15 @@ func (b *Buffer) Complete(ctx *types.NvimCompletionContext) {
 
 	words, _ := val.([]string)
 
-	ret := make(types.NvimCompletionList, 0)
+	ret := ltyp.CompletionList{}
 	targets := fuzzy.RankFindFold(ctx.LineBefore, words)
 	for j := range targets {
-		ret = append(ret, types.NvimCompletionItem{
+		ret.AddItem(&ltyp.CompletionItem{
+			Icon:     "",
 			Word:     targets[j].Target,
-			Kind:     "v",
+			Kind:     "",
+			Source:   "BUF",
 			Distance: targets[j].Distance,
-			Menu:     "BUF",
 		})
 	}
 	ctx.ResultChan <- &ret

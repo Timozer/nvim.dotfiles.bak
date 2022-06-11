@@ -3,6 +3,7 @@ package types
 import (
 	"context"
 	"nvmgo/lib"
+	ltyp "nvmgo/lib/types"
 
 	"github.com/google/uuid"
 	"github.com/neovim/go-client/nvim"
@@ -12,35 +13,6 @@ type NvimLspCompletionResp struct {
 	ReqId  string             `msgpack:"req_id"`
 	Err    interface{}        `msgpack:"err"`
 	Result *LspCompletionList `msgpack:"result"`
-}
-
-type NvimCompletionItem struct {
-	Word     string      `msgpack:"word"`
-	Abbr     string      `msgpack:"abbr"`
-	Menu     string      `msgpack:"menu"`
-	Info     string      `msgpack:"info"`
-	Kind     string      `msgpack:"kind"`
-	Icase    int         `msgpack:"icase"`
-	Equal    bool        `msgpack:"equal"`
-	Dup      bool        `msgpack:"dup"`
-	Empty    bool        `msgpack:"empty"`
-	UserData interface{} `msgpack:"user_data"`
-
-	Distance int `msgpack:"-"`
-}
-
-type NvimCompletionList []NvimCompletionItem
-
-func (c NvimCompletionList) Len() int {
-	return len(c)
-}
-
-func (c NvimCompletionList) Less(i, j int) bool {
-	return c[i].Distance < c[j].Distance
-}
-
-func (c NvimCompletionList) Swap(i, j int) {
-	c[i], c[j] = c[j], c[i]
 }
 
 type NvimCompletionContext struct {
@@ -61,7 +33,7 @@ type NvimCompletionContext struct {
 	LineAfter     string
 
 	ReqId      string
-	ResultChan chan *NvimCompletionList
+	ResultChan chan *ltyp.CompletionList
 	Context    context.Context
 	CancelFunc context.CancelFunc
 }

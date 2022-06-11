@@ -53,3 +53,10 @@ func ReverseBytes(src []byte) []byte {
 	}
 	return ret
 }
+
+func Max(l, r int) int {
+	if l > r {
+		return l
+	}
+	return r
+}

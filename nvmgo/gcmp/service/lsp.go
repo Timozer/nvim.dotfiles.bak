@@ -6,6 +6,7 @@ import (
 	"gcmp/types"
 	"nvmgo/lib"
 	lnvim "nvmgo/lib/nvim"
+	ltyp "nvmgo/lib/types"
 	"path/filepath"
 	"sync"
 
@@ -67,12 +68,14 @@ func (l *Lsp) CompletionResp(args []*types.NvimLspCompletionResp) {
 		return
 	}
 	ctx := val.(*types.NvimCompletionContext)
-	cmpLst := make(types.NvimCompletionList, 0)
+	cmpLst := ltyp.CompletionList{}
 	for i := range resp.Result.Items {
 		l.logger.Debug().Interface("CompletionItem", resp.Result.Items[i]).Msg("Item")
-		cmpLst = append(cmpLst, types.NvimCompletionItem{
-			Word: resp.Result.Items[i].Label,
-			Menu: "LSP",
+		cmpLst.AddItem(&ltyp.CompletionItem{
+			Icon:   "",
+			Word:   resp.Result.Items[i].Label,
+			Kind:   resp.Result.Items[i].Kind.String(),
+			Source: "LSP",
 		})
 	}
 	ctx.ResultChan <- &cmpLst

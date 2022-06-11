@@ -54,8 +54,12 @@ func (w *Window) Open(enter bool) error {
 		return fmt.Errorf("buf invalid [%v] or there is an error: %s", !valid, err)
 	}
 
+	w.Id, err = w.Nvim.OpenWindow(w.Buffer.Number, enter, w.Config)
+	if err != nil {
+		return fmt.Errorf("open window fail, err: %s", err)
+	}
+
 	b := w.Nvim.NewBatch()
-	b.OpenWindow(w.Buffer.Number, enter, w.Config, &w.Id)
 	for k := range w.Options {
 		b.SetWindowOption(w.Id, k, w.Options[k])
 	}
