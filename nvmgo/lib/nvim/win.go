@@ -105,12 +105,15 @@ func (w *Window) UpdateConfig() error {
 	return w.Nvim.SetWindowConfig(w.Id, w.Config)
 }
 
-func (w *Window) Close() {
-	valid, _ := w.Valid()
-	if !valid {
-		return
+func (w *Window) Close() error {
+	valid, err := w.Valid()
+	if err != nil {
+		return err
 	}
-	w.Nvim.HideWindow(w.Id)
+	if !valid {
+		return nil
+	}
+	return w.Nvim.HideWindow(w.Id)
 }
 
 // -- local config = {

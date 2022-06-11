@@ -2,10 +2,13 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"gcmp/service"
 	"log"
 	"os"
+	"path/filepath"
 
+	"nvmgo/lib"
 	lnvim "nvmgo/lib/nvim"
 
 	"github.com/neovim/go-client/nvim"
@@ -16,6 +19,14 @@ type Run struct {
 }
 
 func (r *Run) Run(cmdCtx *lnvim.CmdContext) error {
+	defer func() {
+		if p := recover(); p != nil {
+			logger := lib.NewLogger(filepath.Join(lib.GetProgramDir(), "run.log"))
+			logger.Error().Msg(fmt.Sprintf("%v\n", p))
+			os.Exit(1)
+		}
+	}()
+
 	stdout := os.Stdout
 	os.Stdout = os.Stderr
 	log.SetFlags(0)

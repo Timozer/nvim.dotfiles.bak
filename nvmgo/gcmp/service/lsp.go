@@ -100,7 +100,7 @@ func (l *Lsp) Complete(ctx *types.NvimCompletionContext) {
 	err := l.nvim.ExecLua(luaFunc, &result, ctx.ReqId)
 	if err != nil {
 		lnvim.NvimNotifyError(l.nvim, err.Error())
-		l.logger.Error().Err(err).Msg("LspComplete")
+		l.logger.Error().Err(err).Msg("LspComplete Fail")
 		ctx.ResultChan <- nil
 		return
 	}

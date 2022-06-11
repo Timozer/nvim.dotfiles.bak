@@ -5,7 +5,6 @@ import (
 	"nvmgo/lib"
 	lnvim "nvmgo/lib/nvim"
 	"nvmgo/lib/types"
-	"path/filepath"
 
 	"github.com/neovim/go-client/nvim"
 )
@@ -15,7 +14,7 @@ type CompletionMenu struct {
 	win  *lnvim.Window
 }
 
-func NewCompletionMenu(v *nvim.Nvim, pos *lnvim.WinPos) *CompletionMenu {
+func NewCompletionMenu(v *nvim.Nvim) *CompletionMenu {
 	m := CompletionMenu{nvim: v}
 
 	b := lnvim.NewBuffer(v, "Menu")
@@ -39,8 +38,6 @@ func NewCompletionMenu(v *nvim.Nvim, pos *lnvim.WinPos) *CompletionMenu {
 		Relative:  "editor",
 		Width:     1,
 		Height:    1,
-		Row:       pos.Y,
-		Col:       pos.X,
 		Focusable: false,
 		ZIndex:    100,
 		Style:     "minimal",
@@ -69,8 +66,8 @@ func NewCompletionMenu(v *nvim.Nvim, pos *lnvim.WinPos) *CompletionMenu {
 	return &m
 }
 
-func (m *CompletionMenu) Open(lst types.CompletionList) error {
-	logger := lib.NewLogger(filepath.Join(lib.GetProgramDir(), "menu.log"))
+func (m *CompletionMenu) Open(lst types.CompletionList, pos *lnvim.WinPos) error {
+	// logger := lib.NewLogger(filepath.Join(lib.GetProgramDir(), "menu.log"))
 
 	lineFmt := fmt.Sprintf("%%%ds %%-%ds %%%ds [%%%ds]", lst.IconWidth, lst.WordWidth, lst.KindWidth, lst.SourceWidth)
 
@@ -83,19 +80,64 @@ func (m *CompletionMenu) Open(lst types.CompletionList) error {
 		width = lib.Max(width, len(line))
 		lines = append(lines, []byte(line))
 	}
-	m.win.Config.Width = width
+	b := m.nvim.NewBatch()
+	b.SetBufferOption(m.win.Buffer.Number, "modifiable", true)
+	b.SetBufferLines(m.win.Buffer.Number, 0, -1, false, lines)
+	b.SetBufferOption(m.win.Buffer.Number, "modifiable", false)
+	if err := b.Execute(); err != nil {
+		return err
+	}
 
-	logger.Debug().Interface("WinId", m.win.Id).Msg("BeforeOpen")
-	err := m.win.Open(false)
+	m.win.Config.Width = width
+	m.win.Config.Height = len(lines)
+
+	m.win.Config.Row = pos.Y
+	m.win.Config.Col = pos.X
+	return m.win.Open(false)
+}
+
+func (m *CompletionMenu) Visible() (bool, error) {
+	return m.win.Valid()
+}
+
+func (m *CompletionMenu) Close() error {
+	return m.win.Close()
+}
+
+func (m *CompletionMenu) SelectNextItem() error {
+	visible, err := m.Visible()
 	if err != nil {
 		return err
 	}
-	logger.Debug().Interface("WinId", m.win.Id).Msg("AfterOpen")
+	if !visible {
+		return nil
+	}
+	pos, err := m.nvim.WindowCursor(m.win.Id)
+	if err != nil {
+		return err
+	}
+	pos[0] += 1
+	if pos[0] > m.win.Config.Height {
+		pos[0] = 1
+	}
+	return m.nvim.SetWindowCursor(m.win.Id, pos)
+}
 
-	b := m.nvim.NewBatch()
-	b.SetBufferOption(m.win.Buffer.Number, "modifiable", true)
-	b.SetBufferLines(m.win.Buffer.Number, 0, 1, true, lines)
-	b.SetBufferOption(m.win.Buffer.Number, "modifiable", false)
-	return b.Execute()
-	// return nil
+func (m *CompletionMenu) SelectPrevItem() error {
+	visible, err := m.Visible()
+	if err != nil {
+		return err
+	}
+	if !visible {
+		return nil
+	}
+	pos, err := m.nvim.WindowCursor(m.win.Id)
+	if err != nil {
+		return err
+	}
+	pos[0] -= 1
+	if pos[0] == 0 {
+		pos[0] = m.win.Config.Height
+	}
+	return m.nvim.SetWindowCursor(m.win.Id, pos)
 }

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"gcmp/service"
+	"gcmp/types"
 
 	"github.com/neovim/go-client/nvim"
 )
@@ -19,7 +20,10 @@ func BufLinesEventHandler(e ...interface{}) {
 	}
 	event.IsMultipart, _ = e[5].(bool)
 
-	service.GetCompleteIns().SendEvent(event)
+	service.GetCompleteIns().SendEvent(&types.Event{
+		Type: "BufLinesEvent",
+		Data: event,
+	})
 }
 
 func BufChangedTickEventHandler(e ...interface{}) {

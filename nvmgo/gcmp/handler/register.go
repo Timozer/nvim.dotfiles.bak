@@ -16,10 +16,11 @@ func Register(p *plugin.Plugin) error {
 		})
 
 	// AutoCommands
-	p.HandleAutocmd(&plugin.AutocmdOptions{Event: "BufEnter", Group: "GVCmp", Pattern: "*"}, events.BufEnter(p.Nvim))
-	p.HandleAutocmd(&plugin.AutocmdOptions{Event: "VimEnter", Group: "GVCmp", Pattern: "*"}, events.VimEnter(p.Nvim))
+	p.HandleAutocmd(&plugin.AutocmdOptions{Event: "BufEnter", Group: "GCmp", Pattern: "*"}, events.BufEnter(p.Nvim))
+	p.HandleAutocmd(&plugin.AutocmdOptions{Event: "VimEnter", Group: "GCmp", Pattern: "*"}, events.VimEnter(p.Nvim))
 
-	p.HandleAutocmd(&plugin.AutocmdOptions{Event: "BufWritePost", Group: "GVCmp", Pattern: "*", Eval: "expand(\"<abuf>\")"}, events.BufWritePost(p.Nvim))
+	p.HandleAutocmd(&plugin.AutocmdOptions{Event: "BufWritePost", Group: "GCmp", Pattern: "*", Eval: "expand(\"<abuf>\")"}, events.BufWritePost(p.Nvim))
+	p.HandleAutocmd(&plugin.AutocmdOptions{Event: "ModeChanged", Group: "GCmp", Pattern: "[ic]:*"}, events.ModeChanged(p.Nvim))
 
 	// GcmpOnLspAttach
 	p.HandleFunction(&plugin.FunctionOptions{Name: "GcmpOnLspAttach"}, GcmpOnLspAttach(p.Nvim))
@@ -30,6 +31,10 @@ func Register(p *plugin.Plugin) error {
 			return returnArgs(p, eval)
 		})
 	p.HandleFunction(&plugin.FunctionOptions{Name: "LspCompletionResp"}, service.GetLspIns().CompletionResp)
+
+	p.HandleFunction(&plugin.FunctionOptions{Name: "CmpMenuVisible"}, CmpMenuVisible(p.Nvim))
+	p.HandleFunction(&plugin.FunctionOptions{Name: "CmpMenuNextItem"}, CmpMenuNextItem(p.Nvim))
+	p.HandleFunction(&plugin.FunctionOptions{Name: "CmpMenuPrevItem"}, CmpMenuPrevItem(p.Nvim))
 
 	// Command Completion
 	p.HandleCommand(&plugin.CommandOptions{Name: "CompleteThis", NArgs: "?", Complete: "customlist,CompleteThisC"},

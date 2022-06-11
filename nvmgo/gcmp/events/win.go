@@ -20,12 +20,12 @@ func VimEnter(v *nvim.Nvim) func() {
 			lnvim.NvimNotifyError(v, err.Error())
 			return
 		}
-		err = v.SetKeyMap("i", "<tab>", `pumvisible() ? '<C-n>' : '<tab>'`, opts)
+		err = v.SetKeyMap("i", "<tab>", `CmpMenuVisible() ? (CmpMenuNextItem() ? "":"") : '<tab>'`, opts)
 		if err != nil {
 			lnvim.NvimNotifyError(v, err.Error())
 			return
 		}
-		err = v.SetKeyMap("i", "<s-tab>", `pumvisible() ? '<C-p>' : '<bs>'`, opts)
+		err = v.SetKeyMap("i", "<s-tab>", `CmpMenuVisible() ? (CmpMenuPrevItem() ? "":"") : '<bs>'`, opts)
 		if err != nil {
 			lnvim.NvimNotifyError(v, err.Error())
 			return
