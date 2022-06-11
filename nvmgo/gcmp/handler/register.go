@@ -35,6 +35,7 @@ func Register(p *plugin.Plugin) error {
 	p.HandleFunction(&plugin.FunctionOptions{Name: "CmpMenuVisible"}, CmpMenuVisible(p.Nvim))
 	p.HandleFunction(&plugin.FunctionOptions{Name: "CmpMenuNextItem"}, CmpMenuNextItem(p.Nvim))
 	p.HandleFunction(&plugin.FunctionOptions{Name: "CmpMenuPrevItem"}, CmpMenuPrevItem(p.Nvim))
+	p.HandleFunction(&plugin.FunctionOptions{Name: "CmpMenuSelectConfirm"}, CmpMenuSelectConfirm(p.Nvim))
 
 	// Command Completion
 	p.HandleCommand(&plugin.CommandOptions{Name: "CompleteThis", NArgs: "?", Complete: "customlist,CompleteThisC"},

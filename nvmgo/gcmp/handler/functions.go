@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"gcmp/service"
+	"gcmp/types"
 	"strconv"
 
 	lnvim "nvmgo/lib/nvim"
@@ -63,5 +64,14 @@ func CmpMenuPrevItem(v *nvim.Nvim) func() {
 		if err != nil {
 			lnvim.NvimNotifyError(v, fmt.Sprintf("select completion prev item fail, err: %s", err))
 		}
+	}
+}
+
+func CmpMenuSelectConfirm(v *nvim.Nvim) func() {
+	return func() {
+		service.GetCompleteIns().SendEvent(&types.Event{
+			Type: "SelectConfirm",
+			Data: nil,
+		})
 	}
 }

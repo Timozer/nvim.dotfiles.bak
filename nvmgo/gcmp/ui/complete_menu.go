@@ -41,7 +41,7 @@ func NewCompletionMenu(v *nvim.Nvim) *CompletionMenu {
 		Focusable: false,
 		ZIndex:    100,
 		Style:     "minimal",
-		Border:    nvim.BorderStyleRounded,
+		Border:    nvim.BorderStyleNone,
 	}
 	m.win.SetOptions(map[string]interface{}{
 		"relativenumber": false,
@@ -66,9 +66,8 @@ func NewCompletionMenu(v *nvim.Nvim) *CompletionMenu {
 	return &m
 }
 
-func (m *CompletionMenu) Open(lst types.CompletionList, pos *lnvim.WinPos) error {
+func (m *CompletionMenu) Open(lst *types.CompletionList, pos *lnvim.WinPos) error {
 	// logger := lib.NewLogger(filepath.Join(lib.GetProgramDir(), "menu.log"))
-
 	lineFmt := fmt.Sprintf("%%%ds %%-%ds %%%ds [%%%ds]", lst.IconWidth, lst.WordWidth, lst.KindWidth, lst.SourceWidth)
 
 	items := lst.Items
@@ -104,14 +103,15 @@ func (m *CompletionMenu) Close() error {
 	return m.win.Close()
 }
 
-func (m *CompletionMenu) SelectNextItem() error {
-	visible, err := m.Visible()
+func (m *CompletionMenu) GetSelectedIndex() (int, error) {
+	pos, err := m.nvim.WindowCursor(m.win.Id)
 	if err != nil {
-		return err
+		return 0, err
 	}
-	if !visible {
-		return nil
-	}
+	return pos[0] - 1, nil
+}
+
+func (m *CompletionMenu) SelectNextItem() error {
 	pos, err := m.nvim.WindowCursor(m.win.Id)
 	if err != nil {
 		return err
@@ -124,13 +124,6 @@ func (m *CompletionMenu) SelectNextItem() error {
 }
 
 func (m *CompletionMenu) SelectPrevItem() error {
-	visible, err := m.Visible()
-	if err != nil {
-		return err
-	}
-	if !visible {
-		return nil
-	}
 	pos, err := m.nvim.WindowCursor(m.win.Id)
 	if err != nil {
 		return err

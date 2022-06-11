@@ -32,6 +32,8 @@ type NvimCompletionContext struct {
 	StartCol      int
 	LineAfter     string
 
+	CompletionList *ltyp.CompletionList
+
 	ReqId      string
 	ResultChan chan *ltyp.CompletionList
 	Context    context.Context

@@ -13,7 +13,8 @@ func VimEnter(v *nvim.Nvim) func() {
 		opts["silent"] = true
 		opts["expr"] = true
 		err := v.SetKeyMap("i", "<cr>",
-			`pumvisible() ? (complete_info(["selected"]).selected == -1 ? "<c-e><cr>" : "<c-y>") : "<cr>"`,
+			`CmpMenuVisible() ? (CmpMenuSelectConfirm() ? "":"") : '<cr>'`,
+			// `pumvisible() ? (complete_info(["selected"]).selected == -1 ? "<c-e><cr>" : "<c-y>") : "<cr>"`,
 			opts,
 		)
 		if err != nil {
